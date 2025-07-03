@@ -1,0 +1,15 @@
+﻿@model NphiesBridge.Core.Entities.HealthProvider
+
+<form asp-action="DeleteConfirmed" method="post" class="ajax-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="text-center">
+        <p class="mb-4">
+            Are you sure you want to delete <strong>@Model.Name</strong>?
+        </p>
+        <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-danger mr-2">Yes, Delete</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,61 @@
+﻿@model List<NphiesBridge.Core.Entities.HealthProvider>
+@{
+    ViewBag.Title = "Health Providers";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Health Providers</h5>
+        <a href="javascript:void(0);" class="btn btn-sm btn-primary"
+           onclick="openModal('Add Health Provider', '@Url.Action("Create")')">
+            + Add New
+        </a>
+    </div>
+
+    <div class="card-body">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Name</th>
+                    <th>License #</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th style="width: 130px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.LicenseNumber</td>
+                        <td>@p.Email</td>
+                        <td>@p.Phone</td>
+                        <td>
+                            @if (p.IsActive)
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <a href="javascript:void(0);" class="btn btn-sm btn-info"
+                               onclick="openModal('Edit Health Provider', '@Url.Action("Edit", new { id = p.Id })')">
+                                Edit
+                            </a>
+                            <a href="javascript:void(0);" class="btn btn-sm btn-danger"
+                               onclick="openModal('Delete Confirmation', '@Url.Action("Delete", new { id = p.Id })')">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

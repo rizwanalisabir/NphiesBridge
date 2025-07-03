@@ -5,24 +5,22 @@ namespace NphiesBridge.Core.Entities
 {
     public class HealthProvider
     {
-        [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(200)]
         public string Name { get; set; }
 
-        [MaxLength(100)]
-        public string LicenseNumber { get; set; }  // Optional: for NPHIES or CHI reference
+        [MaxLength(50)]
+        public string LicenseNumber { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string ContactPerson { get; set; }
 
         [MaxLength(100)]
-        [EmailAddress]
         public string Email { get; set; }
 
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string Phone { get; set; }
 
         public bool IsActive { get; set; } = true;

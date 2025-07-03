@@ -1,0 +1,10 @@
+﻿@model NphiesBridge.Core.Entities.HealthProvider
+
+<form asp-action="Edit" method="post" class="ajax-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_HealthProviderForm" model="Model" />
+    <div class="text-right mt-3">
+        <button type="submit" class="btn btn-success">Update</button>
+    </div>
+</form>

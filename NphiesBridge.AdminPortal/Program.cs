@@ -1,7 +1,26 @@
+using Microsoft.EntityFrameworkCore;
+using NphiesBridge.AdminPortal.Services.API;
+using NphiesBridge.Infrastructure.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// MVC
+builder.Services.AddControllersWithViews();
+
+// Register HTTP Client
+builder.Services.AddHttpClient<HealthProviderApiService>("NphiesAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7262/api/");
+});
+
+// Register your custom API service
+builder.Services.AddScoped<HealthProviderApiService>();
 
 var app = builder.Build();
 
