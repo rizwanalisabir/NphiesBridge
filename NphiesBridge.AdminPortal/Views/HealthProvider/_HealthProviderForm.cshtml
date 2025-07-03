@@ -1,30 +1,41 @@
 ﻿@model NphiesBridge.Core.Entities.HealthProvider
 
-<div class="form-group">
-    <label asp-for="Name" class="form-label">Name</label>
-    <input asp-for="Name" class="form-control" />
-    <span asp-validation-for="Name" class="text-danger small"></span>
-</div>
+@{
+    var provider = Model ?? new NphiesBridge.Core.Entities.HealthProvider();
+    bool isEdit = provider.Id != Guid.Empty;
+}
 
-<div class="form-group">
-    <label asp-for="LicenseNumber" class="form-label">License Number</label>
-    <input asp-for="LicenseNumber" class="form-control" />
-    <span asp-validation-for="LicenseNumber" class="text-danger small"></span>
-</div>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="providerForm">
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="Id" value="@provider.Id" />
+            }
 
-<div class="form-group">
-    <label asp-for="Email" class="form-label">Email</label>
-    <input asp-for="Email" class="form-control" />
-    <span asp-validation-for="Email" class="text-danger small"></span>
-</div>
+            <div class="form-group">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="form-control form-control-rounded" placeholder="Enter Provider Name" value="@provider.Name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
 
-<div class="form-group">
-    <label asp-for="Phone" class="form-label">Phone</label>
-    <input asp-for="Phone" class="form-control" />
-    <span asp-validation-for="Phone" class="text-danger small"></span>
-</div>
+            <div class="form-group">
+                <label asp-for="LicenseNumber"></label>
+                <input asp-for="LicenseNumber" class="form-control form-control-rounded" placeholder="Enter License Number" value="@provider.LicenseNumber" />
+                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+            </div>
 
-<div class="form-check mt-2">
-    <input asp-for="IsActive" class="form-check-input" />
-    <label asp-for="IsActive" class="form-check-label">Is Active</label>
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control form-control-rounded" placeholder="Enter Email" value="@provider.Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" class="form-control form-control-rounded" placeholder="Enter Phone Number" value="@provider.Phone" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+        </form>
+    </div>
 </div>

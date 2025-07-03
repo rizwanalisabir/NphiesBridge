@@ -1,9 +1,14 @@
 ﻿@model NphiesBridge.Core.Entities.HealthProvider
-
+@{
+    Layout = null;
+}
 <form asp-action="Create" method="post" class="ajax-form">
     @Html.AntiForgeryToken()
     <partial name="_HealthProviderForm" model="Model" />
-    <div class="text-right mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
+
+    <div class="form-group pt-2">
+        <button type="submit" class="btn btn-light btn-round px-3 float-right">
+            <i class="icon-check"></i> Save
+        </button>
     </div>
 </form>

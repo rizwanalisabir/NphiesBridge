@@ -1,0 +1,18 @@
+.table thead th {
+    color: white !important;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1e3c72, #2a5298); /* Blue gradient */
+    color: #fff;
+    border-radius: 10px;
+}
+
+    .modal-content .card-body {
+        background: transparent; /* Inherit modal background */
+        color: #fff;
+    }
+
+    .modal-content label {
+        color: #ffffff; /* Make form labels visible on gradient */
+    }
