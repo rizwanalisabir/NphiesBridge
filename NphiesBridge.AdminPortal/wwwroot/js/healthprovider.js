@@ -19,33 +19,30 @@ $(document).on("submit", ".ajax-form", function (e) {
     var originalBtnText = submitBtn.html();
     submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i>Saving...');
 
-    $.post(url, data)
-        .done(function (response) {
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: data,
+        success: function (response) {
+            console.log('Response received:', response);
+
             // Check if it's a JSON success response
-            if (typeof response === 'object' && response.success) {
+            if (response && typeof response === 'object' && response.success) {
                 $('#mainModal').modal('hide');
                 location.reload();
                 return;
             }
 
-            // If it's HTML (validation errors), update the modal content
-            if (typeof response === 'string') {
-                console.log('Response type:', typeof response);
-                console.log('Response content:', response);
-                $('#mainModalBody').html('');
-                $('#mainModalBody').html(response);
-            }
-        })
-        .fail(function (xhr) {
-            // Handle HTTP errors
-            if (xhr.responseText) {
-                $('#mainModalBody').html(xhr.responseText);
-            } else {
-                $('#mainModalBody').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
-            }
-        })
-        .always(function () {
+            // If it's HTML content (validation errors), update modal
+            $('#mainModalBody').html(response);
+        },
+        error: function (xhr) {
+            console.log('Error response:', xhr.responseText);
+            $('#mainModalBody').html(xhr.responseText || '<div class="alert alert-danger">An error occurred. Please try again.</div>');
+        },
+        complete: function () {
             // Reset button state
             submitBtn.prop('disabled', false).html(originalBtnText);
-        });
+        }
+    });
 });
