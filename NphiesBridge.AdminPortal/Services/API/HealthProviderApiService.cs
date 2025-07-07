@@ -1,4 +1,5 @@
 ﻿using NphiesBridge.Core.Entities;
+using NphiesBridge.Shared.DTOs;
 
 namespace NphiesBridge.AdminPortal.Services.API
 {
@@ -13,27 +14,62 @@ namespace NphiesBridge.AdminPortal.Services.API
 
         public async Task<List<HealthProvider>> GetAllAsync()
         {
-            var response = await _client.GetFromJsonAsync<List<HealthProvider>>("healthproviderapi");
-            return response ?? new List<HealthProvider>();
+            var apiResponse = await _client.GetFromJsonAsync<ApiResponse<List<HealthProviderResponseDto>>>("healthprovider");
+
+            if (apiResponse?.Success == true && apiResponse.Data != null)
+            {
+                // Convert DTOs back to entities
+                return apiResponse.Data.Select(dto => new HealthProvider
+                {
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    LicenseNumber = dto.LicenseNumber,
+                    ContactPerson = dto.ContactPerson,
+                    Email = dto.Email,
+                    Phone = dto.Phone,
+                    IsActive = dto.IsActive,
+                    CreatedAt = dto.CreatedAt
+                }).ToList();
+            }
+
+            return new List<HealthProvider>();
         }
 
         public async Task AddAsync(HealthProvider provider)
         {
-            await _client.PostAsJsonAsync("healthproviderapi", provider);
+            await _client.PostAsJsonAsync("healthprovider", provider);
         }
 
         public async Task UpdateAsync(Guid id, HealthProvider provider)
         {
-            await _client.PutAsJsonAsync($"healthproviderapi/{id}", provider);
+            await _client.PutAsJsonAsync($"healthprovider/{id}", provider);
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            await _client.DeleteAsync($"healthproviderapi/{id}");
+            await _client.DeleteAsync($"healthprovider/{id}");
         }
         public async Task<HealthProvider?> GetByIdAsync(Guid id)
         {
-            return await _client.GetFromJsonAsync<HealthProvider>($"healthproviderapi/{id}");
+            var apiResponse = await _client.GetFromJsonAsync<ApiResponse<HealthProviderResponseDto>>($"healthprovider/{id}");
+
+            if (apiResponse?.Success == true && apiResponse.Data != null)
+            {
+                var dto = apiResponse.Data;
+                return new HealthProvider
+                {
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    LicenseNumber = dto.LicenseNumber,
+                    ContactPerson = dto.ContactPerson,
+                    Email = dto.Email,
+                    Phone = dto.Phone,
+                    IsActive = dto.IsActive,
+                    CreatedAt = dto.CreatedAt
+                };
+            }
+
+            return null;
         }
     }
 }

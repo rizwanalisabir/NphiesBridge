@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NphiesBridge.Core.Entities
 {
-    public class HealthProvider
+    public partial class HealthProvider
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 

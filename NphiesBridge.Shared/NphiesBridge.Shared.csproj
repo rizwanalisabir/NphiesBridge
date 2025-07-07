@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Folder Include="Constants\" />
-    <Folder Include="DTOs\" />
     <Folder Include="Enums\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
   </ItemGroup>
 
 </Project>
