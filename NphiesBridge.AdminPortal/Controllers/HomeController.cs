@@ -1,31 +1,33 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using NphiesBridge.AdminPortal.Models;
+using NphiesBridge.AdminPortal.Services.API;
 
-namespace NphiesBridge.AdminPortal.Controllers;
-
-public class HomeController : Controller
+namespace NphiesBridge.AdminPortal.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly AuthService _authService;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(AuthService authService)
+        {
+            _authService = authService;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public IActionResult Index()
+        {
+            // Check if user is authenticated
+            if (!_authService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            // Check if user has Admin role
+            if (!_authService.IsInRole("Admin"))
+            {
+                return RedirectToAction("AccessDenied", "Auth");
+            }
+
+            // User is authenticated and authorized - show dashboard
+            return View();
+        }
     }
 }

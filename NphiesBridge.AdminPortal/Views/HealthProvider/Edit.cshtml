@@ -1,5 +1,7 @@
 ﻿@model NphiesBridge.Core.Entities.HealthProvider
-
+@{
+    Layout = null;
+}
 <form asp-action="Edit" method="post" class="ajax-form">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />

@@ -37,7 +37,13 @@ namespace NphiesBridge.AdminPortal.Services.API
 
         public async Task AddAsync(HealthProvider provider)
         {
-            await _client.PostAsJsonAsync("healthprovider", provider);
+            var response = await _client.PostAsJsonAsync("healthprovider", provider);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"API Error: {response.StatusCode} - {errorContent}");
+            }
         }
 
         public async Task UpdateAsync(Guid id, HealthProvider provider)

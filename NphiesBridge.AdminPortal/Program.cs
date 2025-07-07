@@ -21,6 +21,16 @@ builder.Services.AddHttpClient<HealthProviderApiService>("NphiesAPI", client =>
 
 // Register your custom API service
 builder.Services.AddScoped<HealthProviderApiService>();
+// Add after existing services
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 
@@ -36,6 +46,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthorization();
 
