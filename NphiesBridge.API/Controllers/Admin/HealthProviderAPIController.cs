@@ -9,7 +9,7 @@ namespace NphiesBridge.API.Controllers.Admin
 {
     [ApiController]
     [Route("api/healthprovider")]
-    //[Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "AdminOnly")]
     public class HealthProviderAPIController : ControllerBase
     {
         private readonly IHealthProviderRepository _repository;

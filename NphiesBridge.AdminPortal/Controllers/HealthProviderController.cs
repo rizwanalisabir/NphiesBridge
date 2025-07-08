@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NphiesBridge.AdminPortal.Filters;
 using NphiesBridge.AdminPortal.Services.API;
 using NphiesBridge.Core.Entities;
 using NphiesBridge.Shared.Helpers;
@@ -6,6 +7,7 @@ using System.Text.Json;
 
 namespace NphiesBridge.AdminPortal.Controllers
 {
+    [AdminAuthorize]
     public class HealthProviderController : Controller
     {
         private readonly HealthProviderApiService _apiService;
@@ -221,11 +223,32 @@ namespace NphiesBridge.AdminPortal.Controllers
         }
 
         // DELETE: POST
-        [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteConfirmed(HealthProvider model)
         {
-            await _apiService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _apiService.DeleteAsync(model.Id);
+
+                // Return JSON success for AJAX requests
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = "Health Provider deleted successfully!" });
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = $"Delete failed: {ex.Message}" });
+                }
+
+                // Handle non-AJAX error
+                TempData["Error"] = $"Delete failed: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
     }

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using NphiesBridge.AdminPortal.Filters;
 using NphiesBridge.AdminPortal.Services.API;
 
 namespace NphiesBridge.AdminPortal.Controllers
 {
+    [AdminAuthorize]
     public class HomeController : Controller
     {
         private readonly AuthService _authService;

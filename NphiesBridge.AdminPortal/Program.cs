@@ -21,6 +21,7 @@ builder.Services.AddHttpClient<HealthProviderApiService>("NphiesAPI", client =>
 
 // Register your custom API service
 builder.Services.AddScoped<HealthProviderApiService>();
+builder.Services.AddScoped<UserApiService>();
 // Add after existing services
 builder.Services.AddSession(options =>
 {

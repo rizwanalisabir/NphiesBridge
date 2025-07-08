@@ -7,7 +7,6 @@ function openModal(title, url) {
         $('#mainModalBody').html(data);
     });
 }
-
 $(document).on("submit", ".ajax-form", function (e) {
     e.preventDefault();
     var form = $(this);
@@ -17,28 +16,52 @@ $(document).on("submit", ".ajax-form", function (e) {
     // Show loading state
     var submitBtn = form.find('button[type="submit"]');
     var originalBtnText = submitBtn.html();
-    submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i>Saving...');
+    submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i>Processing...');
 
     $.ajax({
         url: url,
         type: 'POST',
         data: data,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'  // ← This ensures AJAX detection
+        },
         success: function (response) {
-            console.log('Response received:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response content:', response);
 
             // Check if it's a JSON success response
-            if (response && typeof response === 'object' && response.success) {
+            if (typeof response === 'object' && response.success) {
+                // Show success toast
+                showSuccess(response.message || 'Operation completed successfully!');
+
+                // Close modal and refresh
                 $('#mainModal').modal('hide');
-                location.reload();
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
                 return;
             }
 
-            // If it's HTML content (validation errors), update modal
-            $('#mainModalBody').html(response);
+            // If it's HTML (validation errors), update the modal content
+            if (typeof response === 'string') {
+                $('#mainModalBody').html(response);
+            }
         },
         error: function (xhr) {
             console.log('Error response:', xhr.responseText);
-            $('#mainModalBody').html(xhr.responseText || '<div class="alert alert-danger">An error occurred. Please try again.</div>');
+
+            var errorMessage = 'An error occurred. Please try again.';
+            try {
+                var errorData = JSON.parse(xhr.responseText);
+                if (errorData && errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                // Use default error message
+            }
+
+            showError(errorMessage);
+            $('#mainModal').modal('hide');
         },
         complete: function () {
             // Reset button state

@@ -8,6 +8,8 @@ using NphiesBridge.Shared.Validators;
 using Microsoft.AspNetCore.Identity;
 using NphiesBridge.Core.Entities;
 using Serilog;
+using Microsoft.OpenApi.Models;
+
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -28,7 +30,40 @@ builder.Host.UseSerilog();
 // Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "NphiesBridge API",
+        Version = "v1",
+        Description = "NphiesBridge Healthcare Middleware API"
+    });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(typeof(CreateHealthProviderValidator).Assembly);
@@ -113,7 +148,7 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    await NphiesBridge.API.Data.SeedData.SeedDefaultAdmin(scope.ServiceProvider);
+    await NphiesBridge.API.Data.SeedData.SeedDefaultUsers(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.
