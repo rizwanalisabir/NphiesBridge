@@ -103,7 +103,7 @@ namespace NphiesBridge.AdminPortal.Services.API
         public async Task<List<HealthProviderResponseDto>> GetHealthProvidersAsync()
         {
             SetAuthorizationHeader();
-            var apiResponse = await _client.GetFromJsonAsync<ApiResponse<List<HealthProviderResponseDto>>>("HealthProviderAPI");
+            var apiResponse = await _client.GetFromJsonAsync<ApiResponse<List<HealthProviderResponseDto>>>("healthprovider");
 
             if (apiResponse?.Success == true && apiResponse.Data != null)
             {

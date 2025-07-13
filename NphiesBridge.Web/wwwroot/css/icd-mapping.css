@@ -1,0 +1,391 @@
+﻿/* ICD Mapping Selection Cards */
+.selection-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
+    padding: 40px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+    .selection-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease-in-out infinite;
+    }
+
+.option-direct::before {
+    background: linear-gradient(90deg, #68d391 0%, #38a169 100%);
+}
+
+.option-mapping::before {
+    background: linear-gradient(90deg, #4299e1 0%, #3182ce 100%);
+}
+
+.selection-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    border-color: rgba(102, 126, 234, 0.4);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+}
+
+.option-direct:hover {
+    border-color: rgba(104, 211, 145, 0.4);
+    box-shadow: 0 20px 40px rgba(104, 211, 145, 0.2);
+}
+
+.option-mapping:hover {
+    border-color: rgba(66, 153, 225, 0.4);
+    box-shadow: 0 20px 40px rgba(66, 153, 225, 0.2);
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.option-direct .card-icon {
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+}
+
+.option-mapping .card-icon {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.card-icon::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2, #667eea);
+    z-index: -1;
+    animation: rotate 4s linear infinite;
+}
+
+.card-icon [data-lucide] {
+    width: 40px;
+    height: 40px;
+    color: white;
+    stroke-width: 2;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.card-description {
+    color: #4a5568;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.card-benefits {
+    margin-bottom: 25px;
+}
+
+    .card-benefits ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .card-benefits li {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        color: #4a5568;
+        font-size: 0.9rem;
+    }
+
+    .card-benefits [data-lucide] {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        color: #667eea;
+    }
+
+.option-direct .card-benefits [data-lucide] {
+    color: #38a169;
+}
+
+.option-mapping .card-benefits [data-lucide] {
+    color: #3182ce;
+}
+
+.card-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.option-direct .card-action {
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+}
+
+.option-mapping .card-action {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.card-action [data-lucide] {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.selection-card:hover .card-action [data-lucide] {
+    transform: translateX(5px);
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .selection-card {
+        height: auto;
+        min-height: 350px;
+        margin-bottom: 20px;
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+        .card-icon [data-lucide] {
+            width: 30px;
+            height: 30px;
+        }
+}
+/* Success Page Styles */
+.success-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(104, 211, 145, 0.3);
+    border-radius: 24px;
+    padding: 50px 40px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 30px;
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .success-icon [data-lucide] {
+        width: 50px;
+        height: 50px;
+        color: white;
+        stroke-width: 2;
+    }
+
+.success-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.success-subtitle {
+    font-size: 1.2rem;
+    color: #4a5568;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.benefit-item {
+    text-align: center;
+}
+
+.benefit-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .benefit-icon [data-lucide] {
+        width: 30px;
+        height: 30px;
+        color: white;
+    }
+
+/* Setup Steps Styles */
+.mapping-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.setup-steps {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
+    padding: 40px;
+}
+
+.setup-step {
+    margin-bottom: 40px;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+    .setup-step.active {
+        opacity: 1;
+    }
+
+.step-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 20px;
+}
+
+.step-info h3 {
+    margin: 0 0 5px 0;
+    color: #2d3748;
+}
+
+.step-info p {
+    margin: 0;
+    color: #4a5568;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 3px dashed #667eea;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    background: rgba(102, 126, 234, 0.05);
+    transition: all 0.3s ease;
+}
+
+    .upload-area:hover {
+        border-color: #764ba2;
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+.upload-content [data-lucide] {
+    width: 60px;
+    height: 60px;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn-primary-modern, .btn-secondary-modern, .btn-download, .btn-upload {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary-modern {
+    background: rgba(255, 255, 255, 0.1);
+    color: #4a5568;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(104, 211, 145, 0.4);
+}
+
+.btn-upload {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+}

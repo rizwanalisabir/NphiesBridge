@@ -1,0 +1,304 @@
+﻿/* Modern Row-Based Design for Data Tables */
+
+.modern-list-container {
+    padding: 10px 0;
+}
+
+.modern-row {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    padding: 20px 25px;
+    margin-bottom: 15px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+    .modern-row::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #fff 0%, #764ba2 50%, #fff 100%);
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease-in-out infinite;
+    }
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.modern-row:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.row-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    position: relative;
+    flex-shrink: 0;
+}
+
+    .row-avatar::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fff, #764ba2, #fff);
+        z-index: -1;
+        animation: rotate 4s linear infinite;
+    }
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.row-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+}
+
+.row-main-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.row-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 3px;
+    line-height: 1.2;
+}
+
+.row-subtitle {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.row-info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.row-info-label {
+    font-size: 0.7rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.row-info-value {
+    font-size: 0.9rem;
+    color: #2d3748;
+    font-weight: 500;
+}
+
+.row-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(104, 211, 145, 0.4);
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #cbd5e0 0%, #fff 100%);
+    color: #2d3748;
+}
+
+.role-admin {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(245, 101, 101, 0.4);
+}
+
+.role-provider {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(66, 153, 225, 0.4);
+}
+
+.row-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-btn-edit {
+    background: linear-gradient(135deg, royalblue 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+    .action-btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+.action-btn-delete {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(245, 101, 101, 0.3);
+}
+
+    .action-btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+.action-icon {
+    font-size: 0.85rem;
+}
+
+.empty-state-modern {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 20px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: rgba(102, 126, 234, 0.4);
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.empty-subtitle {
+    color: #718096;
+    margin-bottom: 25px;
+}
+
+.btn-add-modern {
+    background: linear-gradient(135deg, royalblue 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+    .btn-add-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        color: white;
+        text-decoration: none;
+    }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .row-content {
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 15px;
+    }
+
+    .row-info-item:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-row {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .row-content {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .row-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+.text-muted {
+    color: #c5cdd5 !important;
+}

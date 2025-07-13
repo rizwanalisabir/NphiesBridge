@@ -78,7 +78,7 @@ namespace NphiesBridge.API.Data
                     FirstName = firstName,
                     LastName = lastName,
                     EmailConfirmed = true,
-                    IsActive = true
+                    IsActive = true,
                     // HealthProviderId can be set later when you have providers
                 };
 

@@ -158,14 +158,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("67081e4d-694e-47d7-9bd5-f462998cac69"),
+                            Id = new Guid("e359867e-016a-40a4-934d-6852e36d13d2"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("4f24ba67-94fc-46e1-bb4b-a8d47eef4bf5"),
+                            Id = new Guid("df0848e0-640b-49f8-87d1-12a486659396"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"
@@ -303,6 +303,128 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.ToTable("HealthProviders");
                 });
 
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.HospitalIcdCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiagnosisDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DiagnosisName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HealthProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HospitalCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMapped")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SuggestedIcd10Am")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthProviderId");
+
+                    b.ToTable("HospitalIcdCodes");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.IcdCodeMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ConfidenceScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("HospitalCodeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsAiSuggested")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("MappedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MappedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NphiesIcdCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HospitalCodeId");
+
+                    b.HasIndex("MappedByUserId");
+
+                    b.ToTable("IcdCodeMappings");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.NphiesIcdCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Chapter")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NphiesIcdCodes");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("NphiesBridge.Core.Entities.ApplicationRole", null)
@@ -364,9 +486,44 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.Navigation("HealthProvider");
                 });
 
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.HospitalIcdCode", b =>
+                {
+                    b.HasOne("NphiesBridge.Core.Entities.HealthProvider", "HealthProvider")
+                        .WithMany()
+                        .HasForeignKey("HealthProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HealthProvider");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.IcdCodeMapping", b =>
+                {
+                    b.HasOne("NphiesBridge.Core.Entities.IcdMapping.HospitalIcdCode", "HospitalCode")
+                        .WithMany("Mappings")
+                        .HasForeignKey("HospitalCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NphiesBridge.Core.Entities.ApplicationUser", "MappedByUser")
+                        .WithMany()
+                        .HasForeignKey("MappedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HospitalCode");
+
+                    b.Navigation("MappedByUser");
+                });
+
             modelBuilder.Entity("NphiesBridge.Core.Entities.HealthProvider", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.HospitalIcdCode", b =>
+                {
+                    b.Navigation("Mappings");
                 });
 #pragma warning restore 612, 618
         }

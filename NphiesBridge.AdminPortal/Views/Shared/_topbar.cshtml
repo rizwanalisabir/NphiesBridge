@@ -17,13 +17,13 @@
         <ul class="navbar-nav mr-auto align-items-center">
             <li class="nav-item">
                 <a class="nav-link toggle-menu" href="javascript:void();">
-                    <i class="icon-menu menu-icon"></i>
+                    <i class="zmdi zmdi-menu"></i>
                 </a>
             </li>
             <li class="nav-item">
                 <form class="search-bar">
                     <input type="text" class="form-control" placeholder="Enter keywords">
-                    <a href="javascript:void();"><i class="icon-magnifier"></i></a>
+                    <a href="javascript:void();"><i class="zmdi zmdi-search"></i></a>
                 </form>
             </li>
         </ul>
@@ -50,7 +50,7 @@
             <li class="nav-item">
                 <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown" href="#">
                     <span class="user-profile">
-                        <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(userInitials)&background=@avatarColor&color=fff&size=40&rounded=true"
+                        <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(userInitials)&background=@avatarColor&color=000&size=40&rounded=true"
                              class="img-circle" alt="user avatar" title="@userDisplayName">
                     </span>
                 </a>
@@ -60,7 +60,7 @@
                             <div class="media">
                                 <div class="avatar">
                                     <img class="align-self-start mr-3"
-                                         src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(userInitials)&background=@avatarColor&color=fff&size=45&rounded=true"
+                                         src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(userInitials)&background=@avatarColor&color=000&size=45&rounded=true"
                                          alt="user avatar">
                                 </div>
                                 <div class="media-body">
@@ -73,26 +73,26 @@
                     <li class="dropdown-divider"></li>
                     <li class="dropdown-item">
                         <a href="javascript:void();">
-                            <i class="icon-envelope mr-2"></i> Inbox (Coming soon)
+                            <i class="zmdi zmdi-email-open mr-2"></i> Inbox (Coming soon)
                         </a>
                     </li>
                     <li class="dropdown-divider"></li>
                     <li class="dropdown-item">
                         <a href="javascript:void();">
-                            <i class="icon-wallet mr-2"></i> Account (Coming soon)
+                            <i class="zmdi zmdi-account mr-2"></i> Account (Coming soon)
                         </a>
                     </li>
                     <li class="dropdown-divider"></li>
                     <li class="dropdown-item">
                         <a href="javascript:void();">
-                            <i class="icon-settings mr-2"></i> Settings (Coming soon)
+                            <i class="zmdi zmdi-settings mr-2"></i> Settings (Coming soon)
                         </a>
                     </li>
                     <li class="dropdown-divider"></li>
                     <li class="dropdown-item">
                         <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
                             <button type="submit" class="btn btn-link p-0 text-left" style="color: inherit; text-decoration: none;">
-                                <i class="icon-power mr-2"></i> Logout
+                                <i class="zmdi zmdi-power mr-2"></i> Logout
                             </button>
                         </form>
                     </li>

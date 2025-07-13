@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "ICD-10-AM Setup Complete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="success-card">
+                <div class="success-icon">
+                    <i data-lucide="check-circle-2"></i>
+                </div>
+
+                <h2 class="success-title">Perfect! You're All Set!</h2>
+                <p class="success-subtitle">
+                    Your healthcare facility is using Australian Modification (ICD-10-AM),
+                    which is the same system used by NPHIES.
+                </p>
+
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        <h4>Instant Compatibility</h4>
+                        <p>No code mapping required - direct integration with NPHIES</p>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                        <h4>100% Accuracy</h4>
+                        <p>Zero translation errors - your codes work perfectly</p>
+                    </div>
+
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i data-lucide="clock"></i>
+                        </div>
+                        <h4>Ready to Go</h4>
+                        <p>Start submitting claims immediately</p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>What's Next?</h3>
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <span class="step-number">1</span>
+                            <span class="step-text">Your ICD-10 codes will be validated automatically</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">2</span>
+                            <span class="step-text">Claims will be processed without code translation</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">3</span>
+                            <span class="step-text">NPHIES submissions will be seamless</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="@Url.Action("Index", "Home")" class="btn-primary-modern">
+                        <i data-lucide="home"></i> Return to Dashboard
+                    </a>
+                    <a href="@Url.Action("TestIntegration")" class="btn-secondary-modern">
+                        <i data-lucide="play-circle"></i> Test Integration
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>

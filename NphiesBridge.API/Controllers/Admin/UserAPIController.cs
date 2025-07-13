@@ -16,11 +16,22 @@ namespace NphiesBridge.API.Controllers.Admin
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IValidator<CreateUserDto> _createValidator;
+        private readonly IValidator<UpdateUserDto> _updateValidator;
+        private readonly IValidator<ChangeUserPasswordDto> _changePasswordValidator;
 
-        public UserAPIController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public UserAPIController(
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context,
+            IValidator<CreateUserDto> createValidator,
+            IValidator<UpdateUserDto> updateValidator,
+            IValidator<ChangeUserPasswordDto> changePasswordValidator)
         {
             _userManager = userManager;
             _context = context;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         [HttpGet]
@@ -103,12 +114,11 @@ namespace NphiesBridge.API.Controllers.Admin
         {
             try
             {
-                if (!ModelState.IsValid)
+                // Use FluentValidation instead of ModelState
+                var validationResult = await _createValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
                 {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     return BadRequest(ApiResponse<UserResponseDto>.ErrorResult(errors));
                 }
 
@@ -176,12 +186,11 @@ namespace NphiesBridge.API.Controllers.Admin
                 if (id != dto.Id)
                     return BadRequest(ApiResponse.ErrorResult("ID mismatch"));
 
-                if (!ModelState.IsValid)
+                // Use FluentValidation instead of ModelState
+                var validationResult = await _updateValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
                 {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     return BadRequest(ApiResponse.ErrorResult(errors));
                 }
 
@@ -256,12 +265,11 @@ namespace NphiesBridge.API.Controllers.Admin
                 if (id != dto.UserId)
                     return BadRequest(ApiResponse.ErrorResult("ID mismatch"));
 
-                if (!ModelState.IsValid)
+                // Use FluentValidation instead of ModelState
+                var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
                 {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     return BadRequest(ApiResponse.ErrorResult(errors));
                 }
 

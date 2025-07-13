@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NphiesBridge.Core.Entities;
+using NphiesBridge.Core.Entities.IcdMapping;
 
 namespace NphiesBridge.Infrastructure.Data
 {
@@ -10,6 +11,10 @@ namespace NphiesBridge.Infrastructure.Data
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
         public DbSet<HealthProvider> HealthProviders { get; set; }
+        // ICD Mapping Tables
+        public DbSet<HospitalIcdCode> HospitalIcdCodes { get; set; }
+        public DbSet<NphiesIcdCode> NphiesIcdCodes { get; set; }
+        public DbSet<IcdCodeMapping> IcdCodeMappings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

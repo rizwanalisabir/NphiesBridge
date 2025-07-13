@@ -1,5 +1,95 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NphiesBridge.Shared.DTOs.CreateUserDto
 @{
+    Layout = null;
 }
+
+<form asp-action="Create" method="post" class="ajax-form">
+    @Html.AntiForgeryToken()
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="FirstName">First Name</label>
+                        <input asp-for="FirstName" class="form-control form-control-rounded" placeholder="Enter first name" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="LastName">Last Name</label>
+                        <input asp-for="LastName" class="form-control form-control-rounded" placeholder="Enter last name" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email Address</label>
+                <input asp-for="Email" class="form-control form-control-rounded" placeholder="Enter email address" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Password">Password</label>
+                        <input asp-for="Password" type="password" class="form-control form-control-rounded" placeholder="Enter password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control form-control-rounded" placeholder="Confirm password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Role">Role</label>
+                        <select asp-for="Role" class="form-control form-control-rounded">
+                            @foreach (var role in ViewBag.Roles as List<string>)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="HealthProviderId">Health Provider (for Provider role)</label>
+                        <select asp-for="HealthProviderId" class="form-control form-control-rounded">
+                            <option value="">Select Health Provider (Optional)</option>
+                            @foreach (var provider in ViewBag.HealthProviders as List<NphiesBridge.Shared.DTOs.HealthProviderResponseDto>)
+                            {
+                                <option value="@provider.Id">@provider.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="HealthProviderId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsActive" class="form-check-label">
+                        Active User
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group pt-2">
+        <button type="submit" class="btn btn-light btn-round px-3 float-right">
+            <i class="icon-check"></i> Create User
+        </button>
+    </div>
+</form>

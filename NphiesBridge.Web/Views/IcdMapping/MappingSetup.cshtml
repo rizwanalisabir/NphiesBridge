@@ -1,0 +1,163 @@
+﻿@{
+    ViewData["Title"] = "ICD-10 Code Mapping Setup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="mapping-header">
+                <h2>ICD-10 Code Mapping Setup</h2>
+                <p class="text-muted">Let's map your hospital's ICD-10 codes to NPHIES standards</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="setup-steps">
+                <!-- Step 1: Download Template -->
+                <div class="setup-step active" id="step1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-info">
+                            <h3>Download Excel Template</h3>
+                            <p>Get our pre-formatted template to upload your ICD-10 codes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="template-info">
+                            <div class="template-preview">
+                                <h4>Template Columns:</h4>
+                                <div class="column-list">
+                                    <div class="column-item">
+                                        <span class="column-name">ICD-10-AM Code</span>
+                                        <span class="column-desc">(Optional) - If you know the equivalent</span>
+                                    </div>
+                                    <div class="column-item">
+                                        <span class="column-name">Hospital ICD Code</span>
+                                        <span class="column-desc">(Required) - Your facility's code</span>
+                                    </div>
+                                    <div class="column-item">
+                                        <span class="column-name">Diagnosis Name</span>
+                                        <span class="column-desc">(Required) - Medical condition name</span>
+                                    </div>
+                                    <div class="column-item">
+                                        <span class="column-name">Diagnosis Description</span>
+                                        <span class="column-desc">(Optional) - Detailed description</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="template-actions">
+                                <button class="btn-download" onclick="downloadTemplate()">
+                                    <i data-lucide="download"></i> Download Excel Template
+                                </button>
+                                <p class="download-note">
+                                    <i data-lucide="info"></i>
+                                    The template includes sample data to guide you
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Fill Template -->
+                <div class="setup-step" id="step2">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-info">
+                            <h3>Fill Your Hospital Codes</h3>
+                            <p>Add your facility's ICD-10 codes to the template</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="tips-grid">
+                            <div class="tip-item">
+                                <i data-lucide="lightbulb"></i>
+                                <h4>Pro Tip</h4>
+                                <p>Include as much detail as possible for better AI matching</p>
+                            </div>
+                            <div class="tip-item">
+                                <i data-lucide="target"></i>
+                                <h4>Accuracy</h4>
+                                <p>Precise diagnosis names help our AI find perfect matches</p>
+                            </div>
+                            <div class="tip-item">
+                                <i data-lucide="zap"></i>
+                                <h4>Speed</h4>
+                                <p>Pre-filled ICD-10-AM codes will skip AI matching</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Upload & Process -->
+                <div class="setup-step" id="step3">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-info">
+                            <h3>Upload & AI Processing</h3>
+                            <p>Upload your completed template for AI-powered mapping</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <i data-lucide="upload-cloud"></i>
+                                <h4>Drop Excel file here or click to browse</h4>
+                                <p>Supports .xlsx and .xls files up to 10MB</p>
+                                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                                <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                                    Choose File
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="upload-progress" id="uploadProgress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">Uploading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="step-navigation">
+                    <button class="btn-secondary-modern" onclick="goBack()">
+                        <i data-lucide="arrow-left"></i> Back to Selection
+                    </button>
+                    <button class="btn-primary-modern" onclick="startMapping()">
+                        Continue to Mapping <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadTemplate() {
+    // Will implement this to generate and download Excel template
+    window.location.href = '@Url.Action("DownloadTemplate")';
+}
+
+function goBack() {
+    window.location.href = '@Url.Action("Index")';
+}
+
+function startMapping() {
+    // Will implement file upload and processing
+    alert('File upload functionality will be implemented next!');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
+</script>

@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "ICD-10 Code Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="mb-3">ICD-10 Code Management Setup</h2>
+            <p class="lead text-muted">Choose your ICD-10 system to get started</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Option A: Australian Modification -->
+        <div class="col-lg-5 col-md-6 mb-4">
+            <div class="selection-card option-direct" onclick="selectOption('australian')">
+                <div class="card-icon">
+                    <i data-lucide="check-circle-2"></i>
+                </div>
+                <h3 class="card-title">Australian Modification (ICD-10-AM)</h3>
+                <p class="card-description">
+                    You're using the same ICD-10 system as NPHIES.
+                    <strong>No mapping required!</strong>
+                </p>
+                <div class="card-benefits">
+                    <ul>
+                        <li><i data-lucide="zap"></i> Instant setup</li>
+                        <li><i data-lucide="shield-check"></i> 100% compatibility</li>
+                        <li><i data-lucide="clock"></i> Ready to submit claims</li>
+                    </ul>
+                </div>
+                <div class="card-action">
+                    <span class="btn-text">Continue with ICD-10-AM</span>
+                    <i data-lucide="arrow-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option B: Other System -->
+        <div class="col-lg-5 col-md-6 mb-4">
+            <div class="selection-card option-mapping" onclick="selectOption('custom')">
+                <div class="card-icon">
+                    <i data-lucide="git-branch"></i>
+                </div>
+                <h3 class="card-title">Other ICD-10 System</h3>
+                <p class="card-description">
+                    You're using a different ICD-10 system.
+                    <strong>We'll help you map your codes!</strong>
+                </p>
+                <div class="card-benefits">
+                    <ul>
+                        <li><i data-lucide="brain"></i> AI-powered matching</li>
+                        <li><i data-lucide="upload"></i> Excel template import</li>
+                        <li><i data-lucide="target"></i> Precise mapping control</li>
+                    </ul>
+                </div>
+                <div class="card-action">
+                    <span class="btn-text">Set up code mapping</span>
+                    <i data-lucide="arrow-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-12 text-center">
+            <p class="text-muted">
+                <i data-lucide="help-circle"></i>
+                Not sure which system you're using?
+                <a href="#" class="text-primary">Check your current ICD-10 documentation</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectOption(type) {
+        if (type === 'australian') {
+            window.location.href = '@Url.Action("SetupAustralianModification")';
+        } else if (type === 'custom') {
+            window.location.href = '@Url.Action("SetupCustomMapping")';
+        }
+    }
+
+    // Initialize Lucide icons
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>

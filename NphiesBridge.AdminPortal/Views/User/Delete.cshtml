@@ -1,5 +1,49 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NphiesBridge.Shared.DTOs.UserResponseDto
 @{
+    Layout = null;
 }
+
+<form asp-action="DeleteConfirmed" method="post" class="ajax-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="text-center">
+        <div class="mb-4">
+            <i class="zmdi zmdi-alert-triangle text-warning" style="font-size: 3rem;"></i>
+        </div>
+
+        <h5 class="mb-3">Delete User Confirmation</h5>
+
+        <p class="mb-4">
+            Are you sure you want to delete user <strong>@Model.FullName</strong>?
+        </p>
+
+        <div class="alert alert-warning text-left">
+            <strong>User Details:</strong><br>
+            <strong>Name:</strong> @Model.FullName<br>
+            <strong>Email:</strong> @Model.Email<br>
+            <strong>Role:</strong> @Model.Role<br>
+            @if (!string.IsNullOrEmpty(Model.HealthProviderName))
+            {
+                <strong>Health Provider:</strong> @Model.HealthProviderName
+
+                <br>
+            }
+            <strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")
+        </div>
+
+        <div class="alert alert-danger">
+            <i class="zmdi zmdi-alert-circle mr-2"></i>
+            <strong>Warning:</strong> This action cannot be undone. All user data will be permanently deleted.
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-danger mr-2">
+                <i class="zmdi zmdi-delete"></i> Yes, Delete User
+            </button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="zmdi zmdi-close"></i> Cancel
+            </button>
+        </div>
+    </div>
+</form>

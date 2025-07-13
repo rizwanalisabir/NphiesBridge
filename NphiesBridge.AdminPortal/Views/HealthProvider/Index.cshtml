@@ -6,56 +6,94 @@
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Health Providers</h5>
-        <a href="javascript:void(0);" class="btn btn-sm btn-primary"
+        <div>
+            <h5 class="mb-0">Health Providers</h5>
+            <small class="text-muted">Manage healthcare provider organizations</small>
+        </div>
+        <a href="javascript:void(0);" class="btn-add-modern"
            onclick="openModal('Add Health Provider', '@Url.Action("Create",null)')">
-            + Add New
+            <i class="zmdi zmdi-plus"></i> Add Provider
         </a>
     </div>
-
     <div class="card-body">
-        <table class="table table-striped table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th>Name</th>
-                    <th>License #</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th style="width: 130px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
+        @if (Model.Any())
+        {
+            <div class="modern-list-container">
+                @foreach (var provider in Model)
                 {
-                    <tr>
-                        <td>@p.Name</td>
-                        <td>@p.LicenseNumber</td>
-                        <td>@p.Email</td>
-                        <td>@p.Phone</td>
-                        <td>
-                            @if (p.IsActive)
-                            {
-                                <span class="badge badge-success">Active</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-secondary">Inactive</span>
-                            }
-                        </td>
-                        <td>
-                            <a href="javascript:void(0);" class="btn btn-sm btn-info"
-                               onclick="openModal('Edit Health Provider', '@Url.Action("Edit", new { id = p.Id })')">
-                                Edit
+                    <div class="modern-row">
+                        <div class="row-avatar">
+                            @provider.Name.Substring(0, Math.Min(2, provider.Name.Length)).ToUpper()
+                        </div>
+
+                        <div class="row-content">
+                            <div class="row-main-info">
+                                <div class="row-title">@provider.Name</div>
+                                <div class="row-subtitle">License: @provider.LicenseNumber</div>
+                            </div>
+
+                            <div class="row-info-item">
+                                <div class="row-info-label">Contact</div>
+                                <div class="row-info-value">@provider.Email</div>
+                                <div class="row-info-value">@provider.Phone</div>
+                            </div>
+
+                            <div class="row-info-item">
+                                <div class="row-info-label">Contact Person</div>
+                                <div class="row-info-value">@provider.ContactPerson</div>
+                            </div>
+
+                            <div class="row-info-item">
+                                <div class="row-info-label">Status</div>
+                                <div class="row-info-value">
+                                    @if (provider.IsActive)
+                                    {
+                                        <span class="row-status status-active">
+                                            <i class="zmdi zmdi-check-circle mr-1"></i>Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="row-status status-inactive">
+                                            <i class="zmdi zmdi-pause-circle mr-1"></i>Inactive
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row-info-item">
+                                <div class="row-info-label">Created</div>
+                                <div class="row-info-value">@provider.CreatedAt.ToString("MMM dd, yyyy")</div>
+                            </div>
+                        </div>
+
+                        <div class="row-actions">
+                            <a href="javascript:void(0);" class="action-btn action-btn-edit"
+                               onclick="openModal('Edit Health Provider', '@Url.Action("Edit", new { id = provider.Id })')">
+                                <i class="zmdi zmdi-edit action-icon"></i>
                             </a>
-                            <a href="javascript:void(0);" class="btn btn-sm btn-danger"
-                               onclick="openModal('Delete Confirmation', '@Url.Action("Delete", new { id = p.Id })')">
-                                Delete
+                            <a href="javascript:void(0);" class="action-btn action-btn-delete"
+                               onclick="openModal('Delete Confirmation', '@Url.Action("Delete", new { id = provider.Id })')">
+                                <i class="zmdi zmdi-delete action-icon"></i>
                             </a>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state-modern">
+                <div class="empty-icon">
+                    <i class="zmdi zmdi-hospital-alt"></i>
+                </div>
+                <div class="empty-title">No Health Providers Found</div>
+                <div class="empty-subtitle">Start by adding your first healthcare provider organization</div>
+                <a href="javascript:void(0);" class="btn-add-modern"
+                   onclick="openModal('Add Health Provider', '@Url.Action("Create", null)')">
+                    <i class="zmdi zmdi-plus mr-2"></i> Add First Provider
+                </a>
+            </div>
+        }
     </div>
 </div>

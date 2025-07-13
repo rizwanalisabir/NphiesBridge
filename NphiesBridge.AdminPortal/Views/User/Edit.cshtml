@@ -1,5 +1,84 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NphiesBridge.Shared.DTOs.UpdateUserDto
 @{
+    Layout = null;
 }
+
+<form asp-action="Edit" method="post" class="ajax-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="FirstName">First Name</label>
+                        <input asp-for="FirstName" class="form-control form-control-rounded" placeholder="Enter first name" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="LastName">Last Name</label>
+                        <input asp-for="LastName" class="form-control form-control-rounded" placeholder="Enter last name" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email Address</label>
+                <input asp-for="Email" class="form-control form-control-rounded" placeholder="Enter email address" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Role">Role</label>
+                        <select asp-for="Role" class="form-control form-control-rounded">
+                            @foreach (var role in ViewBag.Roles as List<string>)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="HealthProviderId">Health Provider (for Provider role)</label>
+                        <select asp-for="HealthProviderId" class="form-control form-control-rounded">
+                            <option value="">Select Health Provider (Optional)</option>
+                            @foreach (var provider in ViewBag.HealthProviders as List<NphiesBridge.Shared.DTOs.HealthProviderResponseDto>)
+                            {
+                                <option value="@provider.Id">@provider.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="HealthProviderId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsActive" class="form-check-label">
+                        Active User
+                    </label>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="zmdi zmdi-info mr-2"></i>
+                <strong>Note:</strong> To change the password, use the separate "Change Password" feature.
+            </div>
+        </div>
+    </div>
+
+    <div class="text-right mt-3">
+        <button type="submit" class="btn btn-success">
+            <i class="icon-check"></i> Update User
+        </button>
+    </div>
+</form>

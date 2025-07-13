@@ -1,13 +1,32 @@
-using Microsoft.EntityFrameworkCore;
-using NphiesBridge.Infrastructure.Data;
+using NphiesBridge.Web.Services.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add HTTP context accessor
+builder.Services.AddHttpContextAccessor();
+
+// ? ADD SESSION SUPPORT
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "NcdoxsProviderSession";
+});
+
+// Add HTTP client for API calls
+builder.Services.AddHttpClient("NphiesAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7262/api/"); // Your API URL
+    client.DefaultRequestHeaders.Add("User-Agent", "NCDOXS-Provider-Portal");
+});
+
+// Register Auth service
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 
@@ -15,19 +34,21 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+// ? ADD SESSION MIDDLEWARE (IMPORTANT: Before UseRouting)
+app.UseSession();
 
+app.UseRouting();
 app.UseAuthorization();
 
+// Set default route to Login
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 
 app.Run();

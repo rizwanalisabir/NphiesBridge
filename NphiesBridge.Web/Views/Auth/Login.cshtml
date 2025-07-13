@@ -1,0 +1,93 @@
+﻿@model NphiesBridge.Shared.DTOs.LoginDto
+@{
+    ViewData["Title"] = "Provider Login";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="card card-authentication1 mx-auto my-5">
+    <div class="card-body">
+        <div class="card-content p-2">
+            <div class="text-center">
+                <img src="~/images/logo-icon.png" style="width: 50%;" alt="logo icon">
+            </div>
+            <div class="card-title text-uppercase text-center py-3">Provider Portal</div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <div asp-validation-summary="All" class="mb-0"></div>
+                </div>
+            }
+
+            <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                <div class="form-group">
+                    <label asp-for="Email" class="sr-only">Email</label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="Email" class="form-control input-shadow" placeholder="Enter Email" autocomplete="username">
+                        <div class="form-control-position">
+                            <i class="icon-user"></i>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="sr-only">Password</label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="Password" class="form-control input-shadow" placeholder="Enter Password" autocomplete="current-password">
+                        <div class="form-control-position">
+                            <i class="icon-lock"></i>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <div class="icheck-material-white">
+                            <input asp-for="RememberMe" type="checkbox" id="user-checkbox" />
+                            <label for="user-checkbox">Remember me</label>
+                        </div>
+                    </div>
+                    <div class="form-group col-6 text-right">
+                        <a href="#" class="text-white">Reset Password</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-light btn-block" id="loginBtn">Sign In</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <small class="text-white-50">
+                    Healthcare Provider Portal Access
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-center py-3">
+        <p class="text-warning mb-0">
+            NCDOXS Provider Portal &copy; @DateTime.Now.Year
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Focus on first input
+            $('input[type="email"]').focus();
+
+            // Handle form submission with loading state
+            $('form').on('submit', function () {
+                var btn = $('#loginBtn');
+                btn.prop('disabled', true);
+                btn.html('<i class="fa fa-spinner fa-spin mr-2"></i>Signing In...');
+            });
+
+            // Initialize Lucide icons if available
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+}
