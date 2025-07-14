@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
+        <div class="col-lg-12 col-md-10">
             <div class="success-card">
                 <div class="success-icon">
                     <i data-lucide="check-circle-2"></i>
@@ -39,35 +39,23 @@
                             <i data-lucide="clock"></i>
                         </div>
                         <h4>Ready to Go</h4>
-                        <p>Start submitting claims immediately</p>
+                        <p>Start validating claims immediately</p>
                     </div>
                 </div>
 
-                <div class="next-steps">
-                    <h3>What's Next?</h3>
-                    <div class="steps-list">
-                        <div class="step-item">
-                            <span class="step-number">1</span>
-                            <span class="step-text">Your ICD-10 codes will be validated automatically</span>
-                        </div>
-                        <div class="step-item">
-                            <span class="step-number">2</span>
-                            <span class="step-text">Claims will be processed without code translation</span>
-                        </div>
-                        <div class="step-item">
-                            <span class="step-number">3</span>
-                            <span class="step-text">NPHIES submissions will be seamless</span>
-                        </div>
+                <div class="next-steps ns">
+                    <div class="card-action" onclick="@Url.Action("Index", "Home")">
+                        <i data-lucide="home"></i>
+                        <span class="btn-text">
+                                Return to Dashboard
+                        </span>
                     </div>
-                </div>
-
-                <div class="action-buttons">
-                    <a href="@Url.Action("Index", "Home")" class="btn-primary-modern">
-                        <i data-lucide="home"></i> Return to Dashboard
-                    </a>
-                    <a href="@Url.Action("TestIntegration")" class="btn-secondary-modern">
-                        <i data-lucide="play-circle"></i> Test Integration
-                    </a>
+                    <div class="card-action border" onclick="@Url.Action("TestIntegration")">
+                        <i data-lucide="play-circle"></i>
+                        <span class="btn-text">
+                                Test Integration
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

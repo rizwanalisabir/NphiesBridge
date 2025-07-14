@@ -6,16 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>@ViewData["Title"] - NCDOXS Provider Portal</title>
+    <title>@ViewData["Title"] - NphiesBridge.AdminPortal</title>
     <!-- loader-->
+    @* <link href="~/css/pace.min.css" rel="stylesheet" /> *@
     <!--favicon-->
     <link rel="icon" href="~/images/favicon.ico" type="image/x-icon">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Vector CSS -->
+    @* <link href="~/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" /> *@
     <!-- simplebar CSS-->
     <link href="~/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
     <!-- Bootstrap core CSS-->
@@ -30,14 +27,8 @@
     <link href="~/css/app-style.css" rel="stylesheet" />
     <link href="~/css/adon.css" rel="stylesheet" />
     <link href="~/css/toast-notifications.css" rel="stylesheet" />
-    <link href="~/css/modern-cards.css" rel="stylesheet" />
     <link href="~/css/icd-mapping.css" rel="stylesheet" />
     <style>
-        /* Apply Inter font globally */
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-        }
-
         /* Fix for icon fonts - exclude from Inter font override */
         [class^="zmdi-"], [class*=" zmdi-"],
         [class^="icon-"], [class*=" icon-"],
@@ -51,6 +42,7 @@
         @await Html.PartialAsync("_sidebar.cshtml")
         @await Html.PartialAsync("_topbar.cshtml")
         <div class="clearfix"></div>
+
         <div class="content-wrapper">
             <div class="container-fluid">
                 @RenderBody()
@@ -63,21 +55,25 @@
     <script src="~/js/jquery.min.js"></script>
     <script src="~/js/popper.min.js"></script>
     <script src="~/js/bootstrap.min.js"></script>
+
     <!-- simplebar js -->
     <script src="~/plugins/simplebar/js/simplebar.js"></script>
     <!-- sidebar-menu js -->
     <script src="~/js/sidebar-menu.js"></script>
+    <!-- loader scripts -->
+    @* <script src="~/js/jquery.loading-indicator.js"></script> *@
     <!-- Custom scripts -->
     <script src="~/js/app-script.js"></script>
+    <!-- Chart js -->
+
+    <script src="~/plugins/Chart.js/Chart.min.js"></script>
+
+    <!-- Index js -->
+    <script src="~/js/index.js"></script>
+    <script src="~/js/healthprovider.js"></script>
     <script src="~/js/toast-notifications.js"></script>
-    <!-- Initialize Lucide Icons -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    @* <script src="~/js/pace.min.js"></script> *@
     @await Html.PartialAsync("_ModalPartial")
 </body>
 </html>

@@ -97,7 +97,7 @@
 }
 
 .card-description {
-    color: #4a5568;
+    color: #fff;
     font-size: 1rem;
     margin-bottom: 20px;
     line-height: 1.5;
@@ -118,7 +118,7 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 8px;
-        color: #4a5568;
+        color: #2d3748;
         font-size: 0.9rem;
     }
 
@@ -244,7 +244,7 @@
 
 .success-subtitle {
     font-size: 1.2rem;
-    color: #4a5568;
+    color: #2d3748;
     margin-bottom: 40px;
     line-height: 1.6;
 }
@@ -307,18 +307,11 @@
     margin-bottom: 20px;
 }
 
-.step-number {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-right: 20px;
+.step-number-big {
+    font-size: 300%;
+    font-weight: bolder;
+    position:absolute;
+    color: #ffffff69;
 }
 
 .step-info h3 {
@@ -388,4 +381,557 @@
 .btn-upload {
     background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
     color: white;
+}
+.next-steps .card-action {
+    width: 47%;
+    margin: 0px 10px 0 10px;
+}
+.ns {
+    display: flex;
+    justify-content: center;
+}
+.next-steps .card-action {
+    background: linear-gradient(135deg, #68d391 0%, #38a169 100%);
+    cursor:pointer;
+}
+.next-steps .border {
+    border: 2px solid #68d391 !important;
+    background: transparent !important;
+}
+/* Improved ICD Mapping Setup Styles */
+
+/* Progress Indicator */
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.progress-step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(233, 236, 239, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #6c757d;
+    border: 2px solid rgba(233, 236, 239, 0.5);
+    z-index: 2;
+    position: relative;
+}
+
+    .progress-step.active {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+        backdrop-filter: blur(15px);
+        color: white;
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+.progress-line {
+    width: 80px;
+    height: 2px;
+    background: rgba(233, 236, 239, 0.6);
+    z-index: 1;
+}
+
+/* Setup Cards - Beautiful Transparent Background */
+.setup-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+}
+
+    .setup-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease-in-out infinite;
+    }
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.setup-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.step-badge {
+    position: absolute;
+    top: -15px;
+    left: 2rem;
+    z-index: 10;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    position: relative;
+}
+
+    .step-number::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2, #667eea);
+        z-index: -1;
+        animation: rotate 4s linear infinite;
+    }
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Template Preview */
+.template-preview-card {
+    background: linear-gradient(135deg, rgba(248, 249, 255, 0.8), rgba(240, 244, 255, 0.6));
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+.column-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    height: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .column-card.required {
+        border-color: rgba(220, 53, 69, 0.4);
+        background: linear-gradient(135deg, rgba(255, 245, 245, 0.9), rgba(255, 240, 240, 0.7));
+        backdrop-filter: blur(15px);
+    }
+
+    .column-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: rgba(102, 126, 234, 0.4);
+    }
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.column-icon {
+    width: 18px;
+    height: 18px;
+    color: #667eea;
+}
+
+.column-card.required .column-icon {
+    color: #dc3545;
+}
+
+.column-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.column-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Tip Cards */
+.tip-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .tip-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+.tip-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+    .tip-icon i {
+        width: 24px;
+        height: 24px;
+    }
+
+.tip-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.tip-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Upload Zone */
+.upload-zone {
+    border: 3px dashed rgba(102, 126, 234, 0.5);
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(248, 249, 255, 0.8), rgba(240, 244, 255, 0.6));
+    backdrop-filter: blur(15px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    .upload-zone:hover {
+        border-color: rgba(118, 75, 162, 0.7);
+        background: linear-gradient(135deg, rgba(240, 244, 255, 0.9), rgba(230, 240, 255, 0.7));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+.upload-icon {
+    color: #667eea;
+}
+
+    .upload-icon i {
+        width: 60px;
+        height: 60px;
+    }
+
+/* Navigation Card */
+.navigation-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Improvements */
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+    .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    }
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+.btn-outline-primary {
+    border: 2px solid rgba(102, 126, 234, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: #667eea;
+}
+
+    .btn-outline-primary:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+.btn-outline-secondary {
+    border: 2px solid rgba(108, 117, 125, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: #6c757d;
+}
+
+    .btn-outline-secondary:hover {
+        transform: translateY(-3px);
+        background: #6c757d;
+        border-color: #6c757d;
+        color: white;
+        box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+    }
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .setup-card {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .step-badge {
+        left: 1.5rem;
+    }
+
+    .progress-indicator {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .progress-line {
+        width: 2px;
+        height: 30px;
+    }
+
+    .tip-card {
+        margin-bottom: 1rem;
+    }
+
+    .navigation-card .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .navigation-card .btn {
+        width: 100%;
+    }
+}
+.fs-10{
+    font-size  : 10px !important;
+}
+.fs-30 {
+    font-size: 30px !important;
+}
+/* Additional CSS for Inline Success - Add to icd-mapping.css */
+
+/* Large Success/Error Icons */
+.success-icon-large i,
+.error-icon-large i {
+    width: 60px !important;
+    height: 60px !important;
+    stroke-width: 1.5;
+}
+
+.success-icon-large {
+    margin: 0 auto;
+}
+
+.error-icon-large {
+    margin: 0 auto;
+}
+
+/* Navigation Button States */
+.btn-primary-modern.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-primary-modern:not(.disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5) !important;
+}
+
+/* Upload Success Styling */
+.upload-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.05));
+    border: 2px solid rgba(40, 167, 69, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 1rem 0;
+}
+
+.upload-error {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(255, 99, 71, 0.05));
+    border: 2px solid rgba(220, 53, 69, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 1rem 0;
+}
+
+/* File Selected Styling */
+.file-selected {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.05));
+    border: 2px solid rgba(40, 167, 69, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+    .file-selected i {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 1rem;
+    }
+
+/* Enhanced Alert Styling */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(32, 201, 151, 0.8));
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.9), rgba(255, 99, 71, 0.8));
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+/* Enhanced Error Details */
+.error-details {
+    max-width: 500px;
+    margin: 0 auto;
+    margin-top: 1rem;
+}
+
+    .error-details ul {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .error-details li {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .error-details [data-lucide] {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        margin-top: 2px;
+        margin-right: 0.5rem;
+    }
+
+/* Step Completion Indicators */
+.setup-step.completed {
+    opacity: 0.8;
+    border-left: 4px solid #28a745;
+}
+
+    .setup-step.completed .step-number {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+.setup-step.active {
+    border-left: 4px solid #667eea;
+}
+
+/* Enhanced Button Animations */
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* Progress Enhancement */
+.upload-progress {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .upload-success,
+    .upload-error,
+    .file-selected {
+        padding: 1.5rem;
+    }
+
+    .success-icon-large i,
+    .error-icon-large i {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    .upload-stats .row {
+        gap: 1rem;
+    }
+
+    .stat-card {
+        margin-bottom: 0.5rem;
+    }
 }

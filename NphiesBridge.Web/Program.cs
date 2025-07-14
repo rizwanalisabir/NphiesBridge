@@ -1,3 +1,4 @@
+using NphiesBridge.Web.Services;
 using NphiesBridge.Web.Services.API;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,7 @@ builder.Services.AddHttpClient("NphiesAPI", client =>
 
 // Register Auth service
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ExcelTemplateService>();
 
 var app = builder.Build();
 

@@ -3,137 +3,199 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
             <div class="mapping-header">
-                <h2>ICD-10 Code Mapping Setup</h2>
-                <p class="text-muted">Let's map your hospital's ICD-10 codes to NPHIES standards</p>
+                <h2 class="display-5 fw-bold text-white mb-3">ICD-10 Code Mapping Setup</h2>
+                <hr />
+                <p class="lead text-muted mb-0">Let's map your hospital's ICD-10 codes to NPHIES standards</p>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="setup-steps">
-                <!-- Step 1: Download Template -->
-                <div class="setup-step active" id="step1">
-                    <div class="step-header">
-                        <div class="step-number">1</div>
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-11">
+
+            <!-- Step 1: Download Template -->
+            <div class="setup-card mb-4" id="step1">
+                <div>
+                    <span class="step-number-big">1</span>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
                         <div class="step-info">
-                            <h3>Download Excel Template</h3>
-                            <p>Get our pre-formatted template to upload your ICD-10 codes</p>
+                            <h3 class="h4 fw-bold text-dark mb-2">Download Excel Template</h3>
+                            <p class="text-muted mb-0">Get our pre-formatted template to upload your ICD-10 codes</p>
                         </div>
                     </div>
-                    
-                    <div class="step-content">
-                        <div class="template-info">
-                            <div class="template-preview">
-                                <h4>Template Columns:</h4>
-                                <div class="column-list">
-                                    <div class="column-item">
-                                        <span class="column-name">ICD-10-AM Code</span>
-                                        <span class="column-desc">(Optional) - If you know the equivalent</span>
+
+                    <div class="col-lg-8">
+                        <div class="template-preview-card">
+                            <h5 class="fw-semibold mb-3 text-muted">Template Structure <span class="fs-10"> (4 Columns included in excel template)</span></h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="column-card">
+                                        <div class="column-header">
+                                            <i data-lucide="code" class="column-icon"></i>
+                                            <span class="column-name">ICD-10-AM Code</span>
+                                        </div>
+                                        <p class="column-desc">Optional - If you know the equivalent</p>
                                     </div>
-                                    <div class="column-item">
-                                        <span class="column-name">Hospital ICD Code</span>
-                                        <span class="column-desc">(Required) - Your facility's code</span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="column-card required">
+                                        <div class="column-header">
+                                            <i data-lucide="hospital" class="column-icon"></i>
+                                            <span class="column-name">Hospital ICD Code</span>
+                                        </div>
+                                        <p class="column-desc">Required - Your facility's code</p>
                                     </div>
-                                    <div class="column-item">
-                                        <span class="column-name">Diagnosis Name</span>
-                                        <span class="column-desc">(Required) - Medical condition name</span>
+                                </div>
+
+                                <div class="col-md-6 mt-2">
+                                    <div class="column-card required">
+                                        <div class="column-header">
+                                            <i data-lucide="stethoscope" class="column-icon"></i>
+                                            <span class="column-name">Diagnosis Name</span>
+                                        </div>
+                                        <p class="column-desc">Required - Medical condition name</p>
                                     </div>
-                                    <div class="column-item">
-                                        <span class="column-name">Diagnosis Description</span>
-                                        <span class="column-desc">(Optional) - Detailed description</span>
+                                </div>
+
+                                <div class="col-md-6 mt-2">
+                                    <div class="column-card">
+                                        <div class="column-header">
+                                            <i data-lucide="file-text" class="column-icon"></i>
+                                            <span class="column-name">Diagnosis Description</span>
+                                        </div>
+                                        <p class="column-desc">Optional - Detailed description</p>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="template-actions">
-                                <button class="btn-download" onclick="downloadTemplate()">
-                                    <i data-lucide="download"></i> Download Excel Template
+
+                            <div class="template-actions mt-4 text-center">
+                                <button class="btn btn-success btn-lg px-4 py-3" onclick="downloadTemplate()">
+                                    <i data-lucide="download" class="me-2"></i> Download Excel Template
                                 </button>
-                                <p class="download-note">
-                                    <i data-lucide="info"></i>
+                                <p class="text-muted mt-2 mb-0">
+                                    <i data-lucide="info" class="me-1"></i>
                                     The template includes sample data to guide you
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Step 2: Fill Template -->
-                <div class="setup-step" id="step2">
-                    <div class="step-header">
-                        <div class="step-number">2</div>
+            <!-- Step 2: Fill Template -->
+            <div class="setup-card mb-4" id="step2">
+                <div>
+                    <span class="step-number-big">2</span>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
                         <div class="step-info">
-                            <h3>Fill Your Hospital Codes</h3>
-                            <p>Add your facility's ICD-10 codes to the template</p>
+                            <h3 class="h4 fw-bold text-dark mb-2">Fill Your Hospital Codes</h3>
+                            <p class="text-muted mb-0">Add your facility's ICD-10 codes to the template</p>
                         </div>
                     </div>
-                    
-                    <div class="step-content">
-                        <div class="tips-grid">
-                            <div class="tip-item">
-                                <i data-lucide="lightbulb"></i>
-                                <h4>Pro Tip</h4>
-                                <p>Include as much detail as possible for better AI matching</p>
+
+                    <div class="col-lg-8">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="tip-card">
+                                    <div class="tip-icon bg-warning">
+                                        <i data-lucide="lightbulb"></i>
+                                    </div>
+                                    <h5 class="tip-title">Pro Tip</h5>
+                                    <p class="tip-text">Include as much detail as possible for better AI matching</p>
+                                </div>
                             </div>
-                            <div class="tip-item">
-                                <i data-lucide="target"></i>
-                                <h4>Accuracy</h4>
-                                <p>Precise diagnosis names help our AI find perfect matches</p>
+
+                            <div class="col-md-4">
+                                <div class="tip-card">
+                                    <div class="tip-icon bg-info">
+                                        <i data-lucide="target"></i>
+                                    </div>
+                                    <h5 class="tip-title">Accuracy</h5>
+                                    <p class="tip-text">Precise diagnosis names help our AI find perfect matches</p>
+                                </div>
                             </div>
-                            <div class="tip-item">
-                                <i data-lucide="zap"></i>
-                                <h4>Speed</h4>
-                                <p>Pre-filled ICD-10-AM codes will skip AI matching</p>
+
+                            <div class="col-md-4">
+                                <div class="tip-card">
+                                    <div class="tip-icon bg-primary">
+                                        <i data-lucide="zap"></i>
+                                    </div>
+                                    <h5 class="tip-title">Speed</h5>
+                                    <p class="tip-text">Pre-filled ICD-10-AM codes will skip AI matching</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Step 3: Upload & Process -->
-                <div class="setup-step" id="step3">
-                    <div class="step-header">
-                        <div class="step-number">3</div>
+            <!-- Step 3: Upload & Process -->
+            <div class="setup-card mb-5" id="step3">
+                <div>
+                    <span class="step-number-big">3</span>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
                         <div class="step-info">
-                            <h3>Upload & AI Processing</h3>
-                            <p>Upload your completed template for AI-powered mapping</p>
+                            <h3 class="h4 fw-bold text-dark mb-2">Upload & AI Processing</h3>
+                            <p class="text-muted mb-0">Upload your completed template for AI-powered mapping</p>
                         </div>
                     </div>
-                    
-                    <div class="step-content">
-                        <div class="upload-area" id="uploadArea">
-                            <div class="upload-content">
-                                <i data-lucide="upload-cloud"></i>
-                                <h4>Drop Excel file here or click to browse</h4>
-                                <p>Supports .xlsx and .xls files up to 10MB</p>
+
+                    <div class="col-lg-8">
+                        <div class="upload-zone" id="uploadArea">
+                            <div class="upload-content text-center py-5">
+                                <div class="upload-icon mb-3">
+                                    <i data-lucide="upload-cloud"></i>
+                                </div>
+                                <h4 class="mb-2">Drop Excel file here or click to browse</h4>
+                                <p class="text-muted mb-4">Supports .xlsx and .xls files up to 10MB</p>
                                 <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
-                                <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
-                                    Choose File
+                                <button class="btn btn-outline-primary btn-lg px-4" onclick="document.getElementById('fileInput').click()">
+                                    <i data-lucide="folder-open" class="me-2"></i> Choose File
                                 </button>
                             </div>
                         </div>
-                        
-                        <div class="upload-progress" id="uploadProgress" style="display: none;">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progressFill"></div>
+
+                        <div class="upload-progress mt-3" id="uploadProgress" style="display: none;">
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                                     id="progressFill" role="progressbar" style="width: 0%"></div>
                             </div>
-                            <div class="progress-text" id="progressText">Uploading...</div>
+                            <div class="progress-text text-center" id="progressText">Uploading...</div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Navigation -->
-                <div class="step-navigation">
-                    <button class="btn-secondary-modern" onclick="goBack()">
-                        <i data-lucide="arrow-left"></i> Back to Selection
-                    </button>
-                    <button class="btn-primary-modern" onclick="startMapping()">
-                        Continue to Mapping <i data-lucide="arrow-right"></i>
-                    </button>
+            <!-- Navigation -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="navigation-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-primary btn-lg px-4" onclick="goBack()">
+                                <i class="fa fa-arrow-left" class="me-2"></i> Back to Selection
+                            </button>
+                            <button class="btn btn-success btn-lg px-4 btnmapping" onclick="startMapping()">
+                                Continue to Mapping <i data-lucide="arrow-right" class="ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -141,23 +203,361 @@
 </div>
 
 <script>
-function downloadTemplate() {
-    // Will implement this to generate and download Excel template
-    window.location.href = '@Url.Action("DownloadTemplate")';
-}
-
-function goBack() {
-    window.location.href = '@Url.Action("Index")';
-}
-
-function startMapping() {
-    // Will implement file upload and processing
-    alert('File upload functionality will be implemented next!');
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+    function downloadTemplate() {
+        window.location.href = '@Url.Action("DownloadTemplate")';
     }
-});
+
+    function goBack() {
+        window.location.href = '@Url.Action("Index")';
+    }
+
+    function startMapping() {
+        alert('File upload functionality will be implemented next!');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+    // Updated JavaScript for MappingSetup.cshtml - Replace the existing <script> section
+
+    let selectedFile = null;
+    let uploadCompleted = false;
+    let uploadData = null;
+
+    function downloadTemplate() {
+        window.location.href = '@Url.Action("DownloadTemplate")';
+    }
+
+    function goBack() {
+        window.location.href = '@Url.Action("Index")';
+    }
+
+    function startMapping() {
+        if (uploadCompleted && uploadData) {
+            // Move to AI fuzzy matching and manual mapping
+            window.location.href = '@Url.Action("StartMapping")';
+        } else {
+            alert('Please upload and validate your template first!');
+        }
+    }
+
+    // File input change handler
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            selectedFile = file;
+            showFileSelected(file);
+        }
+    });
+
+    function showFileSelected(file) {
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadContent = uploadArea.querySelector('.upload-content');
+
+        uploadContent.innerHTML = `
+            <div class="file-selected">
+                <i data-lucide="file-check" class="text-success"></i>
+                <h4 class="text-success">File Selected</h4>
+                <p><strong>${file.name}</strong></p>
+                <p class="text-muted">${formatFileSize(file.size)} - Ready to upload</p>
+                <div class="mt-3">
+                    <button class="btn btn-success btn-lg px-4 me-3" onclick="uploadFile()">
+                        <i data-lucide="upload" class="me-2"></i> Upload & Validate
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearSelection()">
+                        <i data-lucide="x" class="me-2"></i> Clear
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function clearSelection() {
+        selectedFile = null;
+        uploadCompleted = false;
+        uploadData = null;
+        document.getElementById('fileInput').value = '';
+        resetUploadArea();
+        updateNavigationButtons();
+    }
+
+    function resetUploadArea() {
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadContent = uploadArea.querySelector('.upload-content');
+
+        uploadContent.innerHTML = `
+            <div class="upload-icon mb-3">
+                <i data-lucide="upload-cloud"></i>
+            </div>
+            <h4 class="mb-2">Drop Excel file here or click to browse</h4>
+            <p class="text-muted mb-4">Supports .xlsx and .xls files up to 10MB</p>
+            <button class="btn btn-outline-primary btn-lg px-4" onclick="document.getElementById('fileInput').click()">
+                <i data-lucide="folder-open" class="me-2"></i> Choose File
+            </button>
+        `;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function uploadFile() {
+        if (!selectedFile) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('templateFile', selectedFile);
+
+        // Show upload progress
+        showUploadProgress();
+
+        fetch('@Url.Action("UploadTemplate")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideUploadProgress();
+
+                if (data.success) {
+                    uploadCompleted = true;
+                    uploadData = data;
+                    showUploadSuccess(data);
+                    updateNavigationButtons();
+                } else {
+                    showUploadError(data);
+                }
+            })
+            .catch(error => {
+                hideUploadProgress();
+                showUploadError({ message: 'Upload failed. Please try again.' });
+                console.error('Upload error:', error);
+            });
+    }
+
+    function showUploadProgress() {
+        const progressDiv = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        progressDiv.style.display = 'block';
+        progressText.textContent = 'Uploading and validating...';
+
+        // Simulate progress animation
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressFill.style.width = progress + '%';
+        }, 200);
+
+        // Store interval ID for cleanup
+        progressDiv.dataset.intervalId = interval;
+    }
+
+    function hideUploadProgress() {
+        const progressDiv = document.getElementById('uploadProgress');
+        const intervalId = progressDiv.dataset.intervalId;
+
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+
+        // Complete the progress bar
+        document.getElementById('progressFill').style.width = '100%';
+
+        setTimeout(() => {
+            progressDiv.style.display = 'none';
+        }, 500);
+    }
+
+    function showUploadSuccess(data) {
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.innerHTML = `
+            <div class="upload-success text-center py-4">
+                <div class="success-icon-large mb-3">
+                    <i data-lucide="check-circle" class="text-success"></i>
+                </div>
+                <h4 class="text-success mb-3">Upload Successful!</h4>
+                <p class="text-muted mb-3">Your ICD-10 codes have been processed and validated.</p>
+
+                <div class="upload-stats">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-number text-primary font-large h3">${data.totalRows}</div>
+                                <div class="stat-label text-muted">Total Rows</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-number text-success h3">${data.validRows}</div>
+                                    <div class="stat-label text-muted">Valid Codes</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-number ${data.errorRows > 0 ? 'text-warning' : 'text-muted'} h3">${data.errorRows}</div>
+                                    <div class="stat-label text-muted">Errors</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="alert alert-success d-inline-block">
+                        <i data-lucide="info" class="me-2 mr-1"></i>
+                        Ready to proceed with AI matching and manual mapping!
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                        <i data-lucide="upload" class="me-2"></i> Upload Different File
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function showUploadError(data) {
+        const uploadArea = document.getElementById('uploadArea');
+        let errorHtml = `
+            <div class="upload-error text-center py-4">
+                <div class="error-icon-large mb-3">
+                    <i data-lucide="alert-circle" class="text-danger"></i>
+                </div>
+                <h4 class="text-danger mb-3">Upload Failed</h4>
+                <p class="text-muted mb-3">${data.message}</p>
+        `;
+
+        if (data.errors && data.errors.length > 0) {
+            errorHtml += `
+                <div class="error-details text-left">
+                    <h6 class="text-center mb-3">Validation Errors:</h6>
+                    <div class="alert alert-danger">
+                        <ul class="list-unstyled mb-0">
+            `;
+
+            data.errors.slice(0, 5).forEach(error => {
+                errorHtml += `<li class="small mb-1"><i data-lucide="x" class="me-1"></i> ${error}</li>`;
+            });
+
+            if (data.errors.length > 5) {
+                errorHtml += `<li class="text-muted small">... and ${data.errors.length - 5} more errors</li>`;
+            }
+
+            errorHtml += '</ul></div></div>';
+        }
+
+        errorHtml += `
+                <button class="btn btn-primary mt-3" onclick="clearSelection()">
+                    <i data-lucide="refresh-cw" class="me-2"></i> Try Again
+                </button>
+            </div>
+        `;
+
+        uploadArea.innerHTML = errorHtml;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function updateNavigationButtons() {
+        const continueBtn = document.querySelector('.btnmapping');
+
+        if (uploadCompleted && uploadData) {
+            // Enable the continue button and update text
+            continueBtn.classList.remove('disabled');
+            continueBtn.innerHTML = '<i data-lucide="brain" class="me-2"></i> Start AI Matching <i data-lucide="arrow-right" class="ms-2"></i>';
+            continueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            continueBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.4)';
+        } else {
+            // Disable the continue button
+            continueBtn.classList.add('disabled');
+            continueBtn.innerHTML = 'Continue to Mapping <i data-lucide="arrow-right" class="ms-2"></i>';
+            continueBtn.style.background = '';
+            continueBtn.style.boxShadow = '';
+        }
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Initialize navigation buttons
+        updateNavigationButtons();
+
+        // Add drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            uploadArea.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                selectedFile = files[0];
+                showFileSelected(files[0]);
+            }
+        }
+    });
 </script>

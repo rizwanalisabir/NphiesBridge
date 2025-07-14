@@ -160,7 +160,7 @@ p {
   outline: 0!important
 }
 a {
-    color: #ffffff;
+    color: #0827e1;
 }
 a {
   outline: none!important
@@ -3899,3 +3899,6 @@ table.grid td {
     .validation-summary-errors ul li {
         color: #ffffff !important;
     }
+.text-muted {
+    color: #2d3748 !important;
+}
