@@ -1,0 +1,203 @@
+﻿@{
+    ViewData["Title"] = "ICD-10 Code Mapping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/icd-mappings.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+}
+
+<div class="container-fluid">
+    <div class="mapping-container mx-auto" style="max-width: 1400px;">
+        <!-- Header -->
+        <div class="mapping-header">
+            <h2 class="fw-bold mb-2">AI-Powered ICD-10 Code Mapping</h2>
+            <p class="mb-0 opacity-75">Matching your hospital codes with NPHIES standards using advanced AI</p>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="progress-overview">
+            <div class="progress-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="processingCount">0</div>
+                    <div class="stat-label">Processing</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="pendingCount">@Model.TotalRows</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCount">@Model.TotalRows</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+            <div class="overall-progress">
+                <div class="overall-progress-fill" id="overallProgress" style="width: 0%"></div>
+            </div>
+            <div class="text-center mt-3">
+                <small class="text-muted fw-medium">
+                    <span id="progressText">Initializing AI matching engine...</span>
+                </small>
+            </div>
+        </div>
+
+        <!-- Mapping Rows -->
+        <div id="mappingRows">
+            @for (int i = 0; i < Model.HospitalCodes.Count; i++)
+            {
+                var hospitalCode = Model.HospitalCodes[i];
+                var rowNumber = i + 1;
+
+                <div class="mapping-row pending" id="row@(rowNumber)" data-row="@rowNumber" data-hospital-id="@hospitalCode.Id">
+                    <div class="row-header">
+                        <div class="row-info">
+                            <div class="row-number">@rowNumber</div>
+                            <div>
+                                <div class="fw-bold text-dark">@hospitalCode.HospitalIcdCode - @hospitalCode.DiagnosisName</div>
+                                <div class="text-muted small mt-1">Hospital Code: @hospitalCode.HospitalIcdCode</div>
+                            </div>
+                        </div>
+                        <div class="row-status pending">
+                            <div class="status-dot"></div>
+                            <span class="status-text">Pending Analysis</span>
+                        </div>
+                    </div>
+                    <div class="row-content" style="display: none;">
+                        <div class="mapping-grid">
+                            <!-- User Data Section -->
+                            <div class="mapping-section user-data-section">
+                                <div class="section-header">
+                                    <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                                    Your Hospital Data
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Hospital Code</div>
+                                    <div class="data-value">@hospitalCode.HospitalIcdCode</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Diagnosis Name</div>
+                                    <div class="data-value">@hospitalCode.DiagnosisName</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="data-label">Description</div>
+                                    <div class="data-value">@(hospitalCode.DiagnosisDescription ?? "No description provided")</div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(hospitalCode.IcdAmCode))
+                                {
+                                    <div class="data-item">
+                                        <div class="data-label">Provided ICD-10-AM</div>
+                                        <div class="data-value text-success fw-bold">@hospitalCode.IcdAmCode</div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- AI Suggestion Section -->
+                            <div class="mapping-section ai-suggestion-section">
+                                <div class="section-header">
+                                    <i data-lucide="brain" style="width: 16px; height: 16px;"></i>
+                                    AI Suggestion
+                                </div>
+                                <div class="processing-indicator" id="processing@(rowNumber)">
+                                    <div class="spinner"></div>
+                                    <span>Analyzing diagnosis pattern...</span>
+                                </div>
+                                <div style="display: none;" id="suggestion@(rowNumber)">
+                                    <!-- AI suggestion will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Final Mapping Section -->
+                            <div class="mapping-section final-mapping-section">
+                                <div class="section-header">
+                                    <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                                    Final Mapping
+                                </div>
+                                <div style="display: none;" id="finalMapping@(rowNumber)">
+                                    <div class="dropdown-section">
+                                        <div class="dropdown-label">NPHIES ICD Code</div>
+                                        <select class="form-select nphies-select" id="nphiesSelect@(rowNumber)" style="width: 100%;" data-hospital-id="@hospitalCode.Id">
+                                            <option value="">Select NPHIES Code...</option>
+                                        </select>
+                                    </div>
+                                    <div class="dropdown-section">
+                                        <div class="dropdown-label">Mapped to Hospital</div>
+                                        <select class="form-select hospital-select" id="hospitalSelect@(rowNumber)" style="width: 100%;">
+                                            <option value="@hospitalCode.HospitalIcdCode">@hospitalCode.HospitalIcdCode - @hospitalCode.DiagnosisName</option>
+                                        </select>
+                                    </div>
+                                    <div class="action-buttons">
+                                        <button class="btn-action btn-approve" onclick="approveMapping(@rowNumber)">
+                                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                                            Approve
+                                        </button>
+                                        <button class="btn-action btn-edit" onclick="editMapping(@rowNumber)">
+                                            <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                                            Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Enhanced Control Panel -->
+    <div class="control-panel">
+        <div class="control-header">
+            <i data-lucide="settings" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            Mapping Controls
+        </div>
+        <div class="control-buttons">
+            <button class="control-btn btn-pause" onclick="pauseProcessing()">
+                <i data-lucide="pause" style="width: 18px; height: 18px;"></i>
+                Pause Processing
+            </button>
+            <button class="control-btn btn-approve-all" onclick="approveAll()">
+                <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                Approve All High Match
+            </button>
+            <button class="control-btn btn-export" onclick="exportResults()">
+                <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                Export Final Mappings
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="~/js/icd-mapping.js"></script>
+    <script>
+        // Initialize the mapping process with data from the server
+        document.addEventListener('DOMContentLoaded', function () {
+            // Pass server data to JavaScript
+            window.mappingData = {
+                totalRows: @Model.TotalRows,
+                hospitalCodes: @Html.Raw(Json.Serialize(Model.HospitalCodes)),
+                sessionId: '@Model.SessionId',
+                apiUrls: {
+                    getNphiesCodes: '@Url.Action("GetNphiesCodes", "IcdMapping")',
+                    getAiSuggestion: '@Url.Action("GetAiSuggestion", "IcdMapping")',
+                    saveMapping: '@Url.Action("SaveMapping", "IcdMapping")',
+                    exportMappings: '@Url.Action("ExportMappings", "IcdMapping")'
+                }
+            };
+
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Start the mapping process
+            initializeMappingProcess();
+        });
+    </script>
+}

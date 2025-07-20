@@ -70,18 +70,18 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateHealthProviderValidator)
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
 
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IHealthProviderRepository, HealthProviderRepository>();
+// Register the AI matching service
+builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
 // Add after other service registrations
 builder.Services.AddScoped<IJwtService, JwtService>();
 
@@ -141,7 +141,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<NphiesBridge.API.Middlewares.GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

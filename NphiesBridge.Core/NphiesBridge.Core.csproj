@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.17" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NphiesBridge.Shared\NphiesBridge.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

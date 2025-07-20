@@ -9,7 +9,7 @@ builder.Services.AddControllersWithViews();
 // Add HTTP context accessor
 builder.Services.AddHttpContextAccessor();
 
-// ? ADD SESSION SUPPORT
+// ADD SESSION SUPPORT
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -19,14 +19,26 @@ builder.Services.AddSession(options =>
     options.Cookie.Name = "NcdoxsProviderSession";
 });
 
-// Add HTTP client for API calls
+// API Base URL Configuration
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7262";
+
+// Add HTTP client for existing API calls
 builder.Services.AddHttpClient("NphiesAPI", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7262/api/"); // Your API URL
+    client.BaseAddress = new Uri($"{apiBaseUrl}/api/");
     client.DefaultRequestHeaders.Add("User-Agent", "NCDOXS-Provider-Portal");
 });
 
-// Register Auth service
+// Add ICD Mapping API Service (with HttpClient)
+builder.Services.AddHttpClient<IcdMappingApiService>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromMinutes(5); // For potentially long AI processing
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "NCDOXS-ICD-Mapping");
+});
+
+// Register existing services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ExcelTemplateService>();
 
@@ -42,11 +54,17 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// ? ADD SESSION MIDDLEWARE (IMPORTANT: Before UseRouting)
+// ADD SESSION MIDDLEWARE (IMPORTANT: Before UseRouting)
 app.UseSession();
 
 app.UseRouting();
 app.UseAuthorization();
+
+// Add ICD Mapping routes
+app.MapControllerRoute(
+    name: "icd-mapping",
+    pattern: "IcdMapping/{action=Index}/{id?}",
+    defaults: new { controller = "IcdMapping" });
 
 // Set default route to Login
 app.MapControllerRoute(

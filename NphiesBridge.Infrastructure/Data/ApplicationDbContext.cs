@@ -15,6 +15,7 @@ namespace NphiesBridge.Infrastructure.Data
         public DbSet<HospitalIcdCode> HospitalIcdCodes { get; set; }
         public DbSet<NphiesIcdCode> NphiesIcdCodes { get; set; }
         public DbSet<IcdCodeMapping> IcdCodeMappings { get; set; }
+        public DbSet<MappingSession> MappingSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

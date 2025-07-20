@@ -36,7 +36,7 @@ namespace NphiesBridge.API.Controllers
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage)
                         .ToList();
-                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult("Errors", errors));
                 }
 
                 var user = await _userManager.FindByEmailAsync(model.Email);
@@ -90,7 +90,7 @@ namespace NphiesBridge.API.Controllers
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage)
                         .ToList();
-                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult("Errors", errors));
                 }
 
                 var existingUser = await _userManager.FindByEmailAsync(model.Email);
@@ -113,7 +113,7 @@ namespace NphiesBridge.API.Controllers
                 if (!result.Succeeded)
                 {
                     var errors = result.Errors.Select(e => e.Description).ToList();
-                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<AuthResponseDto>.ErrorResult("Errors", errors));
                 }
 
                 // Assign role

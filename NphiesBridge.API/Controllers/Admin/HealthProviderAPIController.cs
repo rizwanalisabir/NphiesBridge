@@ -90,7 +90,7 @@ namespace NphiesBridge.API.Controllers.Admin
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    return BadRequest(ApiResponse<HealthProviderResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<HealthProviderResponseDto>.ErrorResult("Errors", errors));
                 }
 
                 var provider = new HealthProvider

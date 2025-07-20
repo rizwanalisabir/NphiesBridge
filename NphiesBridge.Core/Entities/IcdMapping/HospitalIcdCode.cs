@@ -14,6 +14,8 @@ namespace NphiesBridge.Core.Entities.IcdMapping
         public string? DiagnosisDescription { get; set; }
         public string? SuggestedIcd10Am { get; set; } // From Excel template
         public bool IsMapped { get; set; } = false;
+        public Guid? MappingSessionId { get; set; } // Add this line
+        public MappingSession? MappingSession { get; set; } = null!; // Add this line
 
         // Navigation
         public HealthProvider HealthProvider { get; set; } = null!;

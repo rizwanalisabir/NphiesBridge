@@ -119,7 +119,7 @@ namespace NphiesBridge.API.Controllers.Admin
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    return BadRequest(ApiResponse<UserResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<UserResponseDto>.ErrorResult("Errors",errors));
                 }
 
                 // Check if email already exists
@@ -144,7 +144,7 @@ namespace NphiesBridge.API.Controllers.Admin
                 if (!result.Succeeded)
                 {
                     var errors = result.Errors.Select(e => e.Description).ToList();
-                    return BadRequest(ApiResponse<UserResponseDto>.ErrorResult(errors));
+                    return BadRequest(ApiResponse<UserResponseDto>.ErrorResult("Errors", errors));
                 }
 
                 // Assign role

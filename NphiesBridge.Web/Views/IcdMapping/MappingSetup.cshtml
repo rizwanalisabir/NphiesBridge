@@ -203,24 +203,7 @@
 </div>
 
 <script>
-    function downloadTemplate() {
-        window.location.href = '@Url.Action("DownloadTemplate")';
-    }
-
-    function goBack() {
-        window.location.href = '@Url.Action("Index")';
-    }
-
-    function startMapping() {
-        alert('File upload functionality will be implemented next!');
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    });
-    // Updated JavaScript for MappingSetup.cshtml - Replace the existing <script> section
+    // Enhanced JavaScript for MappingSetup.cshtml - File Upload Functionality
 
     let selectedFile = null;
     let uploadCompleted = false;
@@ -236,21 +219,56 @@
 
     function startMapping() {
         if (uploadCompleted && uploadData) {
-            // Move to AI fuzzy matching and manual mapping
-            window.location.href = '@Url.Action("StartMapping")';
+            const sessionId = uploadData.sessionId || 'temp-session-' + Date.now();
+
+            // Use Razor URL helper for clean routing
+            window.location.href = '@Url.Action("ICD10Mapping", "IcdMapping")?sessionId=' + sessionId;
         } else {
-            alert('Please upload and validate your template first!');
+            showToast('Please upload and validate your template first!', 'warning');
         }
     }
 
     // File input change handler
-    document.getElementById('fileInput').addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            selectedFile = file;
-            showFileSelected(file);
+    function initializeFileInput() {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (validateFile(file)) {
+                        selectedFile = file;
+                        showFileSelected(file);
+                    } else {
+                        clearFileInput();
+                    }
+                }
+            });
         }
-    });
+    }
+
+    function validateFile(file) {
+        // Check file type
+        const allowedTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+            'application/vnd.ms-excel' // .xls
+        ];
+
+        if (!allowedTypes.includes(file.type) &&
+            !file.name.toLowerCase().endsWith('.xlsx') &&
+            !file.name.toLowerCase().endsWith('.xls')) {
+            showToast('Please select a valid Excel file (.xlsx or .xls)', 'error');
+            return false;
+        }
+
+        // Check file size (10MB limit)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (file.size > maxSize) {
+            showToast('File size must be less than 10MB', 'error');
+            return false;
+        }
+
+        return true;
+    }
 
     function showFileSelected(file) {
         const uploadArea = document.getElementById('uploadArea');
@@ -258,16 +276,22 @@
 
         uploadContent.innerHTML = `
             <div class="file-selected">
-                <i data-lucide="file-check" class="text-success"></i>
-                <h4 class="text-success">File Selected</h4>
-                <p><strong>${file.name}</strong></p>
-                <p class="text-muted">${formatFileSize(file.size)} - Ready to upload</p>
-                <div class="mt-3">
-                    <button class="btn btn-success btn-lg px-4 me-3" onclick="uploadFile()">
-                        <i data-lucide="upload" class="me-2"></i> Upload & Validate
+                <div class="file-icon mb-3">
+                    <i data-lucide="file-check" class="text-success" style="width: 48px; height: 48px;"></i>
+                </div>
+                <h5 class="text-success fw-bold mb-2">File Selected</h5>
+                <div class="file-info mb-3">
+                    <p class="file-name mb-1"><strong>${file.name}</strong></p>
+                    <p class="file-size text-muted small">${formatFileSize(file.size)} - Ready to upload</p>
+                </div>
+                <div class="file-actions">
+                    <button class="btn btn-success btn-sm px-3 me-2" onclick="uploadFile()">
+                        <i data-lucide="upload" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Upload & Validate
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="clearSelection()">
-                        <i data-lucide="x" class="me-2"></i> Clear
+                    <button class="btn btn-outline-secondary btn-sm px-3" onclick="clearSelection()">
+                        <i data-lucide="x" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Clear
                     </button>
                 </div>
             </div>
@@ -279,28 +303,56 @@
         }
     }
 
+    // Safe file input trigger function
+    function triggerFileInput() {
+        const fileInput = ensureFileInputExists();
+        if (fileInput) {
+            fileInput.click();
+        } else {
+            console.error('File input element could not be created');
+            showToast('File input not available. Please refresh the page.', 'error');
+        }
+    }
+
     function clearSelection() {
         selectedFile = null;
         uploadCompleted = false;
         uploadData = null;
-        document.getElementById('fileInput').value = '';
+        clearFileInput();
         resetUploadArea();
         updateNavigationButtons();
+
+        // Ensure file input exists and is properly set up
+        ensureFileInputExists();
+
+        showToast('File selection cleared', 'info');
+    }
+
+    function clearFileInput() {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.value = '';
+        }
     }
 
     function resetUploadArea() {
         const uploadArea = document.getElementById('uploadArea');
+        if (!uploadArea) return;
+
         const uploadContent = uploadArea.querySelector('.upload-content');
+        if (!uploadContent) return;
 
         uploadContent.innerHTML = `
-            <div class="upload-icon mb-3">
-                <i data-lucide="upload-cloud"></i>
+            <div class="upload-prompt text-center py-5">
+                <div class="upload-icon mb-3">
+                    <i data-lucide="upload-cloud" style="width: 48px; height: 48px;"></i>
+                </div>
+                <h4 class="mb-2">Drop Excel file here or click to browse</h4>
+                <p class="text-muted mb-4">Supports .xlsx and .xls files up to 10MB</p>
+                <button class="btn btn-outline-primary btn-lg px-4" onclick="triggerFileInput()">
+                    <i data-lucide="folder-open" class="me-2"></i> Choose File
+                </button>
             </div>
-            <h4 class="mb-2">Drop Excel file here or click to browse</h4>
-            <p class="text-muted mb-4">Supports .xlsx and .xls files up to 10MB</p>
-            <button class="btn btn-outline-primary btn-lg px-4" onclick="document.getElementById('fileInput').click()">
-                <i data-lucide="folder-open" class="me-2"></i> Choose File
-            </button>
         `;
 
         // Reinitialize Lucide icons
@@ -311,7 +363,7 @@
 
     function uploadFile() {
         if (!selectedFile) {
-            alert('Please select a file first.');
+            showToast('Please select a file first.', 'warning');
             return;
         }
 
@@ -323,9 +375,17 @@
 
         fetch('@Url.Action("UploadTemplate")', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 hideUploadProgress();
 
@@ -334,14 +394,20 @@
                     uploadData = data;
                     showUploadSuccess(data);
                     updateNavigationButtons();
+                    showToast('File uploaded and validated successfully!', 'success');
                 } else {
                     showUploadError(data);
+                    showToast('Upload validation failed. Please check the errors.', 'error');
                 }
             })
             .catch(error => {
                 hideUploadProgress();
-                showUploadError({ message: 'Upload failed. Please try again.' });
                 console.error('Upload error:', error);
+                showUploadError({
+                    message: 'Upload failed. Please check your connection and try again.',
+                    errors: [error.message]
+                });
+                showToast('Upload failed. Please try again.', 'error');
             });
     }
 
@@ -350,8 +416,11 @@
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
 
+        if (!progressDiv || !progressFill || !progressText) return;
+
         progressDiv.style.display = 'block';
         progressText.textContent = 'Uploading and validating...';
+        progressFill.style.width = '0%';
 
         // Simulate progress animation
         let progress = 0;
@@ -367,64 +436,65 @@
 
     function hideUploadProgress() {
         const progressDiv = document.getElementById('uploadProgress');
-        const intervalId = progressDiv.dataset.intervalId;
+        const progressFill = document.getElementById('progressFill');
+        const intervalId = progressDiv?.dataset.intervalId;
 
         if (intervalId) {
             clearInterval(intervalId);
+            delete progressDiv.dataset.intervalId;
         }
 
-        // Complete the progress bar
-        document.getElementById('progressFill').style.width = '100%';
+        if (progressFill) {
+            progressFill.style.width = '100%';
+        }
 
         setTimeout(() => {
-            progressDiv.style.display = 'none';
+            if (progressDiv) {
+                progressDiv.style.display = 'none';
+            }
         }, 500);
     }
 
     function showUploadSuccess(data) {
         const uploadArea = document.getElementById('uploadArea');
+        if (!uploadArea) return;
+
         uploadArea.innerHTML = `
             <div class="upload-success text-center py-4">
-                <div class="success-icon-large mb-3">
-                    <i data-lucide="check-circle" class="text-success"></i>
+                <div class="success-icon mb-3">
+                    <i data-lucide="check-circle" class="text-success" style="width: 64px; height: 64px;"></i>
                 </div>
-                <h4 class="text-success mb-3">Upload Successful!</h4>
-                <p class="text-muted mb-3">Your ICD-10 codes have been processed and validated.</p>
+                <h4 class="text-success fw-bold mb-3">Upload Successful!</h4>
+                <p class="text-muted mb-4">Your ICD-10 codes have been processed and validated.</p>
 
-                <div class="upload-stats">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <div class="stat-number text-primary font-large h3">${data.totalRows}</div>
-                                <div class="stat-label text-muted">Total Rows</div>
+                <div class="upload-stats mb-4">
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-auto">
+                            <div class="stat-card text-center p-3">
+                                <div class="stat-number text-primary h4 fw-bold mb-1">${data.totalRows || 0}</div>
+                                <div class="stat-label text-muted small">Total Rows</div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <div class="stat-number text-success h3">${data.validRows}</div>
-                                    <div class="stat-label text-muted">Valid Codes</div>
+                        <div class="col-auto">
+                            <div class="stat-card text-center p-3">
+                                <div class="stat-number text-success h4 fw-bold mb-1">${data.validRows || 0}</div>
+                                <div class="stat-label text-muted small">Valid Codes</div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <div class="stat-number ${data.errorRows > 0 ? 'text-warning' : 'text-muted'} h3">${data.errorRows}</div>
-                                    <div class="stat-label text-muted">Errors</div>
+                        <div class="col-auto">
+                            <div class="stat-card text-center p-3">
+                                <div class="stat-number ${(data.errorRows || 0) > 0 ? 'text-warning' : 'text-muted'} h4 fw-bold mb-1">${data.errorRows || 0}</div>
+                                <div class="stat-label text-muted small">Errors</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <div class="alert alert-success d-inline-block">
-                        <i data-lucide="info" class="me-2 mr-1"></i>
+                <div class="success-message mb-3">
+                    <div class="alert alert-success d-inline-block py-2 px-3">
+                        <i data-lucide="info" class="me-2 mr-2" style="width: 16px; height: 16px;"></i>
                         Ready to proceed with AI matching and manual mapping!
                     </div>
-                </div>
-
-                <div class="mt-3">
-                    <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
-                        <i data-lucide="upload" class="me-2"></i> Upload Different File
-                    </button>
                 </div>
             </div>
         `;
@@ -437,25 +507,27 @@
 
     function showUploadError(data) {
         const uploadArea = document.getElementById('uploadArea');
+        if (!uploadArea) return;
+
         let errorHtml = `
             <div class="upload-error text-center py-4">
-                <div class="error-icon-large mb-3">
-                    <i data-lucide="alert-circle" class="text-danger"></i>
+                <div class="error-icon mb-3">
+                    <i data-lucide="alert-circle" class="text-danger" style="width: 64px; height: 64px;"></i>
                 </div>
-                <h4 class="text-danger mb-3">Upload Failed</h4>
-                <p class="text-muted mb-3">${data.message}</p>
+                <h4 class="text-danger fw-bold mb-3">Upload Failed</h4>
+                <p class="text-muted mb-3">${data.message || 'An error occurred during upload.'}</p>
         `;
 
         if (data.errors && data.errors.length > 0) {
             errorHtml += `
-                <div class="error-details text-left">
-                    <h6 class="text-center mb-3">Validation Errors:</h6>
-                    <div class="alert alert-danger">
+                <div class="error-details mb-4">
+                    <h6 class="text-center mb-3 fw-semibold">Validation Errors:</h6>
+                    <div class="alert alert-danger text-start">
                         <ul class="list-unstyled mb-0">
             `;
 
             data.errors.slice(0, 5).forEach(error => {
-                errorHtml += `<li class="small mb-1"><i data-lucide="x" class="me-1"></i> ${error}</li>`;
+                errorHtml += `<li class="small mb-1"><i data-lucide="x" class="me-1" style="width: 16px; height: 16px;"></i> ${error}</li>`;
             });
 
             if (data.errors.length > 5) {
@@ -466,9 +538,12 @@
         }
 
         errorHtml += `
-                <button class="btn btn-primary mt-3" onclick="clearSelection()">
-                    <i data-lucide="refresh-cw" class="me-2"></i> Try Again
-                </button>
+                <div class="error-actions">
+                    <button class="btn btn-primary btn-sm px-3" onclick="clearSelection()">
+                        <i data-lucide="refresh-cw" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Try Again
+                    </button>
+                </div>
             </div>
         `;
 
@@ -482,19 +557,24 @@
 
     function updateNavigationButtons() {
         const continueBtn = document.querySelector('.btnmapping');
+        if (!continueBtn) return;
 
         if (uploadCompleted && uploadData) {
             // Enable the continue button and update text
             continueBtn.classList.remove('disabled');
+            continueBtn.disabled = false;
             continueBtn.innerHTML = '<i data-lucide="brain" class="me-2"></i> Start AI Matching <i data-lucide="arrow-right" class="ms-2"></i>';
             continueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
             continueBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.4)';
+            continueBtn.style.color = 'white';
         } else {
             // Disable the continue button
             continueBtn.classList.add('disabled');
+            continueBtn.disabled = true;
             continueBtn.innerHTML = 'Continue to Mapping <i data-lucide="arrow-right" class="ms-2"></i>';
             continueBtn.style.background = '';
             continueBtn.style.boxShadow = '';
+            continueBtn.style.color = '';
         }
 
         // Reinitialize Lucide icons
@@ -511,20 +591,113 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        // Remove existing toast
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast-notification alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i data-lucide="${getToastIcon(type)}" class="me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+
+        // Initialize Lucide icons for toast
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+    }
+
+    function getToastIcon(type) {
+        switch (type) {
+            case 'success': return 'check-circle';
+            case 'error': return 'alert-circle';
+            case 'warning': return 'alert-triangle';
+            default: return 'info';
+        }
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Ensure file input exists
+        ensureFileInputExists();
+
+        // Initialize file input event listener
+        initializeFileInput();
 
         // Initialize navigation buttons
         updateNavigationButtons();
 
         // Add drag and drop functionality
+        initializeDragAndDrop();
+    });
+    function ensureFileInputExists() {
+        let fileInput = document.getElementById('fileInput');
+
+        if (!fileInput) {
+            // Create the file input if it doesn't exist
+            fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = 'fileInput';
+            fileInput.accept = '.xlsx,.xls';
+            fileInput.style.display = 'none';
+
+            // Add to body
+            document.body.appendChild(fileInput);
+
+            // Reattach event listener
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (validateFile(file)) {
+                        selectedFile = file;
+                        showFileSelected(file);
+                    } else {
+                        clearFileInput();
+                    }
+                }
+            });
+        }
+
+        return fileInput;
+    }
+    function initializeDragAndDrop() {
         const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
+        if (!uploadArea) return;
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
         });
 
         ['dragenter', 'dragover'].forEach(eventName => {
@@ -555,9 +728,12 @@
             const files = dt.files;
 
             if (files.length > 0) {
-                selectedFile = files[0];
-                showFileSelected(files[0]);
+                const file = files[0];
+                if (validateFile(file)) {
+                    selectedFile = file;
+                    showFileSelected(file);
+                }
             }
         }
-    });
+    }
 </script>
