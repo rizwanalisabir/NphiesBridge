@@ -29,7 +29,8 @@
                         <div class="row-content">
                             <div class="row-main-info">
                                 <div class="row-title">@provider.Name</div>
-                                <div class="row-subtitle">License: @provider.LicenseNumber</div>
+                                <div class="row-info-value">@provider.Phone</div>
+                                <div class="row-subtitle text-primary">Unique ID: @provider.Id</div>
                             </div>
 
                             <div class="row-info-item">
@@ -85,10 +86,10 @@
         {
             <div class="empty-state-modern">
                 <div class="empty-icon">
-                    <i class="zmdi zmdi-hospital-alt"></i>
+                    <i class="zmdi zmdi-hospital-alt text-white"></i>
                 </div>
                 <div class="empty-title">No Health Providers Found</div>
-                <div class="empty-subtitle">Start by adding your first healthcare provider organization</div>
+                <div class="text-white mb-2">Start by adding your first healthcare provider organization</div>
                 <a href="javascript:void(0);" class="btn-add-modern"
                    onclick="openModal('Add Health Provider', '@Url.Action("Create", null)')">
                     <i class="zmdi zmdi-plus mr-2"></i> Add First Provider

@@ -5,7 +5,7 @@
 }
 
 .modern-row {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    background: linear-gradient(135deg, rgb(255 255 255 / 48%), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 16px;

@@ -44,6 +44,7 @@ function initializeMappingProcess() {
         showToast('Initialization failed. Please refresh the page.', 'error');
     }
 }
+// Updated loadSessionData function with dynamic rendering
 async function loadSessionData() {
     try {
         updateProgressText('Loading session data...');
@@ -69,8 +70,16 @@ async function loadSessionData() {
             console.log(`Loaded session data: ${totalRows} hospital codes`);
             updateProgressText('Session data loaded successfully.');
 
-            // Update UI with actual data
+            // Render the mapping rows dynamically
+            renderMappingRows();
+
+            // Update counters
             updateCounters();
+
+            // Hide loading state and show mapping rows
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('mappingRows').style.display = 'block';
+
         } else {
             throw new Error(result.message || 'Failed to load session data');
         }
@@ -80,6 +89,126 @@ async function loadSessionData() {
         showToast('Failed to load session data. Please refresh the page.', 'error');
         updateProgressText('❌ Failed to load session data.');
     }
+}
+
+// New function to dynamically render mapping rows
+function renderMappingRows() {
+    const mappingRowsContainer = document.getElementById('mappingRows');
+
+    if (!mappingRowsContainer) {
+        console.error('Mapping rows container not found');
+        return;
+    }
+
+    let rowsHtml = '';
+
+    hospitalCodes.forEach((hospitalCode, index) => {
+        const rowNumber = index + 1;
+
+        rowsHtml += `
+            <div class="mapping-row pending" id="row${rowNumber}" data-row="${rowNumber}" data-hospital-id="${hospitalCode.id}">
+                <div class="row-header">
+                    <div class="row-info">
+                        <div class="row-number">${rowNumber}</div>
+                        <div>
+                            <div class="fw-bold text-dark">${hospitalCode.hospitalCode} - ${hospitalCode.diagnosisName}</div>
+                            <div class="text-muted small mt-1">Hospital Code: ${hospitalCode.hospitalCode}</div>
+                        </div>
+                    </div>
+                    <div class="row-status pending">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Pending Analysis</span>
+                    </div>
+                </div>
+                <div class="row-content" style="display: none;">
+                    <div class="mapping-grid">
+                        <!-- User Data Section -->
+                        <div class="mapping-section user-data-section">
+                            <div class="section-header">
+                                <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                                Your Hospital Data
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Hospital Code</div>
+                                <div class="data-value">${hospitalCode.hospitalCode}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Diagnosis Name</div>
+                                <div class="data-value">${hospitalCode.diagnosisName}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Description</div>
+                                <div class="data-value">${hospitalCode.diagnosisDescription || 'No description provided'}</div>
+                            </div>
+                            ${hospitalCode.suggestedIcd10Am ? `
+                                <div class="data-item">
+                                    <div class="data-label">Provided ICD-10-AM</div>
+                                    <div class="data-value text-success fw-bold">${hospitalCode.suggestedIcd10Am}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- AI Suggestion Section -->
+                        <div class="mapping-section ai-suggestion-section">
+                            <div class="section-header">
+                                <i data-lucide="brain" style="width: 16px; height: 16px;"></i>
+                                AI Suggestion
+                            </div>
+                            <div class="processing-indicator" id="processing${rowNumber}">
+                                <div class="spinner"></div>
+                                <span>Analyzing diagnosis pattern...</span>
+                            </div>
+                            <div style="display: none;" id="suggestion${rowNumber}">
+                                <!-- AI suggestion will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Final Mapping Section -->
+                        <div class="mapping-section final-mapping-section">
+                            <div class="section-header">
+                                <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                                Final Mapping
+                            </div>
+                            <div style="display: none;" id="finalMapping${rowNumber}">
+                                <div class="dropdown-section">
+                                    <div class="dropdown-label">NPHIES ICD Code</div>
+                                    <select class="form-select nphies-select" id="nphiesSelect${rowNumber}" style="width: 100%;" data-hospital-id="${hospitalCode.id}">
+                                        <option value="">Select NPHIES Code...</option>
+                                    </select>
+                                </div>
+                                <div class="dropdown-section">
+                                    <div class="dropdown-label">Mapped to Hospital</div>
+                                    <select class="form-select hospital-select" id="hospitalSelect${rowNumber}" style="width: 100%;">
+                                        <option value="${hospitalCode.hospitalCode}">${hospitalCode.hospitalCode} - ${hospitalCode.diagnosisName}</option>
+                                    </select>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-approve" onclick="approveMapping(${rowNumber})">
+                                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                                        Approve
+                                    </button>
+                                    <button class="btn-action btn-edit" onclick="editMapping(${rowNumber})">
+                                        <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    // Insert the generated HTML
+    mappingRowsContainer.innerHTML = rowsHtml;
+
+    // Reinitialize Lucide icons for the new content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    console.log(`Rendered ${hospitalCodes.length} mapping rows`);
 }
 // Load NPHIES codes from server
 async function loadNphiesCodes() {

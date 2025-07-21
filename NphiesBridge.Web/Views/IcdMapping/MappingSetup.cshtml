@@ -222,7 +222,7 @@
             const sessionId = uploadData.sessionId || 'temp-session-' + Date.now();
 
             // Use Razor URL helper for clean routing
-            window.location.href = '@Url.Action("ICD10Mapping", "IcdMapping")?sessionId=' + sessionId;
+            window.location.href = '@Url.Action("StartMapping", "IcdMapping")?sessionId=' + sessionId;
         } else {
             showToast('Please upload and validate your template first!', 'warning');
         }

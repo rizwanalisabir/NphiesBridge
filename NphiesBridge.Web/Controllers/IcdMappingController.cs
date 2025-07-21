@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NphiesBridge.Shared.DTOs;
+using NphiesBridge.Shared.Helpers;
 using NphiesBridge.Web.Services;
 using NphiesBridge.Web.Services.API;
 
@@ -130,7 +131,7 @@ namespace NphiesBridge.Web.Controllers
                 var requestDto = new CreateSessionRequestDto
                 {
                     SessionId = sessionId,
-                    HealthProviderId = GetCurrentHealthProviderId(),
+                    HealthProviderId = LoggedInUserHelper.GetCurrentHealthProviderId(HttpContext),
                     FileName = fileName,
                     HospitalCodes = validRows.Select(row => new UploadedHospitalCodeDto
                     {
@@ -151,35 +152,35 @@ namespace NphiesBridge.Web.Controllers
             }
         }
 
-        private Guid GetCurrentHealthProviderId()
-        {
-            try
-            {
-                // Get from session, claims, or user context
-                var userSession = HttpContext.Session.GetString("HealthProviderId");
-                if (Guid.TryParse(userSession, out Guid providerId))
-                {
-                    return providerId;
-                }
+        //private Guid GetCurrentHealthProviderId()
+        //{
+        //    try
+        //    {
+        //        // Get from session, claims, or user context
+        //        var userSession = HttpContext.Session.GetString("ProviderCurrentUser");
+        //        if (Guid.TryParse(userSession, out Guid providerId))
+        //        {
+        //            return providerId;
+        //        }
 
-                // Try to get from user claims (if using JWT/Identity)
-                var userIdClaim = User.FindFirst("HealthProviderId")?.Value;
-                if (Guid.TryParse(userIdClaim, out Guid claimProviderId))
-                {
-                    return claimProviderId;
-                }
+        //        // Try to get from user claims (if using JWT/Identity)
+        //        var userIdClaim = User.FindFirst("HealthProviderId")?.Value;
+        //        if (Guid.TryParse(userIdClaim, out Guid claimProviderId))
+        //        {
+        //            return claimProviderId;
+        //        }
 
-                // For development/testing - use a default provider ID
-                // In production, this should never happen if auth is properly set up
-                _logger.LogWarning("No HealthProviderId found in session or claims, using default");
-                return Guid.Parse("00000000-0000-0000-0000-000000000001"); // Replace with actual default logic
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting current health provider ID");
-                throw new InvalidOperationException("Health Provider ID not found in session", ex);
-            }
-        }
+        //        // For development/testing - use a default provider ID
+        //        // In production, this should never happen if auth is properly set up
+        //        _logger.LogWarning("No HealthProviderId found in session or claims, using default");
+        //        return Guid.Parse("00000000-0000-0000-0000-000000000001"); // Replace with actual default logic
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error getting current health provider ID");
+        //        throw new InvalidOperationException("Health Provider ID not found in session", ex);
+        //    }
+        //}
 
         public IActionResult StartMapping(string sessionId)
         {
@@ -214,11 +215,12 @@ namespace NphiesBridge.Web.Controllers
                     return RedirectToAction("SetupCustomMapping");
                 }
 
+                // Create minimal model - data will be loaded via JavaScript
                 var model = new IcdMappingPageDto
                 {
                     SessionId = sessionId,
-                    TotalRows = 0, // Will be loaded via API
-                    HospitalCodes = new List<HospitalCodeDto>()
+                    TotalRows = 0, // Will be populated by JavaScript
+                    HospitalCodes = new List<HospitalCodeDto>() // Will be populated by JavaScript
                 };
 
                 ViewBag.ApiBaseUrl = _configuration["ApiSettings:BaseUrl"];
