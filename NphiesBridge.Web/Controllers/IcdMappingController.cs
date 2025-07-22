@@ -205,7 +205,7 @@ namespace NphiesBridge.Web.Controllers
 
         [HttpGet]
         [Route("IcdMapping")]
-        public IActionResult ICD10Mapping(string sessionId)
+        public async Task<IActionResult> ICD10Mapping(string sessionId)
         {
             try
             {
@@ -215,21 +215,24 @@ namespace NphiesBridge.Web.Controllers
                     return RedirectToAction("SetupCustomMapping");
                 }
 
-                // Create minimal model - data will be loaded via JavaScript
-                var model = new IcdMappingPageDto
-                {
-                    SessionId = sessionId,
-                    TotalRows = 0, // Will be populated by JavaScript
-                    HospitalCodes = new List<HospitalCodeDto>() // Will be populated by JavaScript
-                };
+                // Load session data via API service
+                var sessionResponse = await _mappingApiService.GetMappingSessionAsync(sessionId);
 
+                if (sessionResponse?.Success != true || sessionResponse.Data == null)
+                {
+                    TempData["Error"] = sessionResponse?.Message ?? "Failed to load mapping session data.";
+                    return RedirectToAction("SetupCustomMapping");
+                }
+
+                // Pass the actual data to the view
+                var model = sessionResponse.Data;
                 ViewBag.ApiBaseUrl = _configuration["ApiSettings:BaseUrl"];
 
                 return View("ICD10Mapping", model);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading ICD mapping page for session: {SessionId}", sessionId);
+                _logger.LogError(ex, "Error loading ICD mapping page");
                 TempData["Error"] = "Error loading mapping page. Please try again.";
                 return RedirectToAction("SetupCustomMapping");
             }

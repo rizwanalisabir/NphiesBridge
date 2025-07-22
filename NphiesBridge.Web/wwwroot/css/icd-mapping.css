@@ -2051,3 +2051,59 @@ body {
     ::-webkit-scrollbar-thumb:hover {
         background: rgba(0, 0, 0, 0.5);
     }
+
+.mapping-preview {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.75rem;
+}
+
+.mapping-arrow {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.mapping-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.mapping-from, .mapping-to {
+    text-align: center;
+}
+
+    .mapping-from .fw-bold {
+        color: #6c757d;
+    }
+
+    .mapping-to .fw-bold {
+        color: #0d6efd;
+    }
+
+/* Custom Select2 styling */
+.select2-container--default .select2-selection--single {
+    height: 38px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important;
+}
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px !important;
+        padding-left: 12px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+.select2-dropdown {
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important;
+}
+
+.select2-results__option {
+    padding: 8px 12px !important;
+}

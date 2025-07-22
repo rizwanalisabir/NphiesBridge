@@ -92,6 +92,7 @@ async function loadSessionData() {
 }
 
 // New function to dynamically render mapping rows
+// Updated renderMappingRows function with corrected dropdown structure
 function renderMappingRows() {
     const mappingRowsContainer = document.getElementById('mappingRows');
 
@@ -171,25 +172,46 @@ function renderMappingRows() {
                             </div>
                             <div style="display: none;" id="finalMapping${rowNumber}">
                                 <div class="dropdown-section">
-                                    <div class="dropdown-label">NPHIES ICD Code</div>
+                                    <div class="dropdown-label">
+                                        <i data-lucide="database" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
+                                        NPHIES ICD Code (44K+ Options)
+                                    </div>
                                     <select class="form-select nphies-select" id="nphiesSelect${rowNumber}" style="width: 100%;" data-hospital-id="${hospitalCode.id}">
-                                        <option value="">Select NPHIES Code...</option>
+                                        <option value="">Search and select NPHIES code...</option>
                                     </select>
                                 </div>
-                                <div class="dropdown-section">
-                                    <div class="dropdown-label">Mapped to Hospital</div>
+                                <div class="dropdown-section mt-3">
+                                    <div class="dropdown-label">
+                                        <i data-lucide="hospital" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
+                                        Codes by Health Provider
+                                    </div>
                                     <select class="form-select hospital-select" id="hospitalSelect${rowNumber}" style="width: 100%;">
-                                        <option value="${hospitalCode.hospitalCode}">${hospitalCode.hospitalCode} - ${hospitalCode.diagnosisName}</option>
+                                        <option value="">Select your hospital code...</option>
                                     </select>
                                 </div>
-                                <div class="action-buttons">
-                                    <button class="btn-action btn-approve" onclick="approveMapping(${rowNumber})">
+                                <div class="mapping-preview mt-3" id="mappingPreview${rowNumber}" style="display: none;">
+                                    <div class="mapping-arrow">
+                                        <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div class="mapping-summary">
+                                        <div class="mapping-from">
+                                            <small class="text-muted">Your Code:</small>
+                                            <div class="fw-bold" id="selectedHospitalCode${rowNumber}">-</div>
+                                        </div>
+                                        <div class="mapping-to">
+                                            <small class="text-muted">NPHIES Code:</small>
+                                            <div class="fw-bold text-primary" id="selectedNphiesCode${rowNumber}">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="action-buttons mt-3">
+                                    <button class="btn-action btn-approve" onclick="approveMapping(${rowNumber})" disabled style="opacity: 0.6;">
                                         <i data-lucide="check" style="width: 16px; height: 16px;"></i>
-                                        Approve
+                                        Approve Mapping
                                     </button>
                                     <button class="btn-action btn-edit" onclick="editMapping(${rowNumber})">
                                         <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
-                                        Edit
+                                        Modify Selection
                                     </button>
                                 </div>
                             </div>
@@ -203,12 +225,15 @@ function renderMappingRows() {
     // Insert the generated HTML
     mappingRowsContainer.innerHTML = rowsHtml;
 
-    // Reinitialize Lucide icons for the new content
+    // Initialize Select2 for all rows after rendering
+    initializeAllSelect2Dropdowns();
+
+    // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 
-    console.log(`Rendered ${hospitalCodes.length} mapping rows`);
+    console.log(`Rendered ${hospitalCodes.length} mapping rows with dual searchable dropdowns`);
 }
 // Load NPHIES codes from server
 async function loadNphiesCodes() {
@@ -527,29 +552,93 @@ function getConfidenceText(confidence) {
 // SELECT2 INTEGRATION FUNCTIONS
 // ============================================
 
-// Initialize Select2 dropdowns for a specific row
+// Updated Select2 initialization for individual rows
+// Updated Select2 initialization for individual rows
 function initializeSelect2ForRow(rowNum, aiResult = null) {
-    console.log(`Initializing Select2 for row ${rowNum}`);
+    console.log(`Initializing dual Select2 dropdowns for row ${rowNum}`);
 
     try {
-        // Initialize NPHIES codes dropdown
+        const currentHospitalCode = hospitalCodes[rowNum - 1];
+
+        // 1. Initialize NPHIES codes dropdown (44K+ codes)
         const nphiesSelectId = `#nphiesSelect${rowNum}`;
+
+        if (!$(nphiesSelectId).length) {
+            console.warn(`NPHIES select element not found for row ${rowNum}`);
+            return;
+        }
 
         // Destroy existing Select2 if it exists
         if ($(nphiesSelectId).hasClass('select2-hidden-accessible')) {
             $(nphiesSelectId).select2('destroy');
         }
 
+        // Initialize NPHIES Select2
         $(nphiesSelectId).select2({
             data: nphiesCodes,
-            placeholder: 'Search NPHIES codes...',
+            placeholder: 'Type to search 44K+ NPHIES codes...',
             allowClear: true,
             width: '100%',
             templateResult: formatNphiesCode,
             templateSelection: formatNphiesSelection,
             escapeMarkup: function (markup) { return markup; },
-            matcher: customMatcher
+            matcher: customMatcher,
+            dropdownParent: $(nphiesSelectId).parent(),
+            minimumInputLength: 1, // Start searching after 1 character
+            language: {
+                inputTooShort: function () {
+                    return 'Type to search NPHIES codes...';
+                },
+                searching: function () {
+                    return 'Searching 44K+ codes...';
+                },
+                noResults: function () {
+                    return 'No NPHIES codes found';
+                }
+            }
         });
+
+        // 2. Initialize Hospital codes dropdown (all user's codes)
+        const hospitalSelectId = `#hospitalSelect${rowNum}`;
+
+        if ($(hospitalSelectId).length) {
+            // Destroy existing Select2 if it exists
+            if ($(hospitalSelectId).hasClass('select2-hidden-accessible')) {
+                $(hospitalSelectId).select2('destroy');
+            }
+
+            // Prepare hospital codes data for Select2
+            const hospitalCodesForSelect2 = hospitalCodes.map(code => ({
+                id: code.hospitalCode,
+                text: `${code.hospitalCode} - ${code.diagnosisName}`,
+                description: code.diagnosisDescription || 'No description',
+                fullData: code
+            }));
+
+            // Initialize Hospital Select2
+            $(hospitalSelectId).select2({
+                data: hospitalCodesForSelect2,
+                placeholder: 'Search your hospital codes...',
+                allowClear: false,
+                width: '100%',
+                templateResult: formatHospitalCode,
+                templateSelection: formatHospitalSelection,
+                escapeMarkup: function (markup) { return markup; },
+                matcher: customMatcher,
+                dropdownParent: $(hospitalSelectId).parent(),
+                language: {
+                    searching: function () {
+                        return 'Searching your codes...';
+                    },
+                    noResults: function () {
+                        return 'No matching hospital codes';
+                    }
+                }
+            });
+
+            // Pre-select current hospital code
+            $(hospitalSelectId).val(currentHospitalCode.hospitalCode).trigger('change');
+        }
 
         // Pre-select AI suggestion if available and high confidence
         if (aiResult && aiResult.success && aiResult.confidence >= 70 && aiResult.suggestedCode) {
@@ -558,42 +647,114 @@ function initializeSelect2ForRow(rowNum, aiResult = null) {
             $(nphiesSelectId).val(suggestedCodeId).trigger('change');
         }
 
-        // Initialize hospital codes dropdown (read-only)
-        const hospitalSelectId = `#hospitalSelect${rowNum}`;
-
-        if ($(hospitalSelectId).hasClass('select2-hidden-accessible')) {
-            $(hospitalSelectId).select2('destroy');
-        }
-
-        $(hospitalSelectId).select2({
-            placeholder: 'Hospital code mapping',
-            allowClear: false,
-            width: '100%'
+        // Add change event listeners
+        $(nphiesSelectId).off('change.mapping').on('change.mapping', function () {
+            updateMappingPreview(rowNum);
+            toggleApproveButton(rowNum);
         });
 
-        // Add change event listener for NPHIES select
-        $(nphiesSelectId).on('change', function () {
-            const selectedValue = $(this).val();
-            const approveBtn = document.querySelector(`#row${rowNum} .btn-approve`);
-
-            if (selectedValue && approveBtn) {
-                // Enable approve button when a selection is made
-                approveBtn.disabled = false;
-                approveBtn.style.opacity = '1';
-
-                console.log(`NPHIES code selected for row ${rowNum}: ${selectedValue}`);
-            }
+        $(hospitalSelectId).off('change.mapping').on('change.mapping', function () {
+            updateMappingPreview(rowNum);
+            toggleApproveButton(rowNum);
         });
 
-        // Reinitialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        console.log(`Dual Select2 dropdowns initialized successfully for row ${rowNum}`);
+
+        // Update preview initially
+        updateMappingPreview(rowNum);
 
     } catch (error) {
         console.error(`Error initializing Select2 for row ${rowNum}:`, error);
         showToast(`Failed to initialize dropdowns for row ${rowNum}`, 'error');
     }
+}
+// Toggle approve button based on selections
+function toggleApproveButton(rowNum) {
+    const nphiesValue = $(`#nphiesSelect${rowNum}`).val();
+    const hospitalValue = $(`#hospitalSelect${rowNum}`).val();
+    const approveBtn = document.querySelector(`#row${rowNum} .btn-approve`);
+
+    if (approveBtn) {
+        if (nphiesValue && hospitalValue) {
+            approveBtn.disabled = false;
+            approveBtn.style.opacity = '1';
+            approveBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+        } else {
+            approveBtn.disabled = true;
+            approveBtn.style.opacity = '0.6';
+            approveBtn.style.background = '';
+        }
+    }
+}
+
+// Update mapping preview
+function updateMappingPreview(rowNum) {
+    const nphiesValue = $(`#nphiesSelect${rowNum}`).val();
+    const hospitalValue = $(`#hospitalSelect${rowNum}`).val();
+    const previewDiv = document.getElementById(`mappingPreview${rowNum}`);
+    const selectedHospitalDiv = document.getElementById(`selectedHospitalCode${rowNum}`);
+    const selectedNphiesDiv = document.getElementById(`selectedNphiesCode${rowNum}`);
+
+    if (nphiesValue && hospitalValue && previewDiv && selectedHospitalDiv && selectedNphiesDiv) {
+        // Get display text for selected options
+        const nphiesText = $(`#nphiesSelect${rowNum} option:selected`).text() ||
+            $(`#nphiesSelect${rowNum}`).select2('data')[0]?.text || nphiesValue;
+        const hospitalText = $(`#hospitalSelect${rowNum} option:selected`).text() ||
+            $(`#hospitalSelect${rowNum}`).select2('data')[0]?.text || hospitalValue;
+
+        selectedHospitalDiv.textContent = hospitalText;
+        selectedNphiesDiv.textContent = nphiesText;
+        previewDiv.style.display = 'block';
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } else if (previewDiv) {
+        previewDiv.style.display = 'none';
+    }
+}
+
+// Format hospital selection for display
+function formatHospitalSelection(code) {
+    if (!code.id) return code.text;
+    return code.text;
+}
+
+// Initialize Select2 for all rendered rows
+function initializeAllSelect2Dropdowns() {
+    if (!nphiesCodes || nphiesCodes.length === 0) {
+        console.warn('NPHIES codes not loaded yet, skipping Select2 initialization');
+        return;
+    }
+
+    console.log('Initializing Select2 dropdowns for all rows...');
+
+    hospitalCodes.forEach((hospitalCode, index) => {
+        const rowNumber = index + 1;
+        initializeSelect2ForRow(rowNumber);
+    });
+}
+
+// Format hospital code for display in dropdown
+function formatHospitalCode(code) {
+    if (!code.id) return code.text;
+
+    const codeId = code.id;
+    const fullText = code.text;
+    const description = code.description || 'No description';
+
+    return $(`
+        <div style="padding: 8px 0; border-bottom: 1px solid #f8f9fa;">
+            <div style="font-weight: 600; color: #495057; font-size: 0.9rem;">${codeId}</div>
+            <div style="font-size: 0.85rem; color: #6c757d; margin-top: 2px; line-height: 1.3;">
+                ${fullText.replace(codeId + ' - ', '')}
+            </div>
+            <div style="font-size: 0.75rem; color: #868e96; margin-top: 2px; font-style: italic;">
+                ${description.substring(0, 80)}${description.length > 80 ? '...' : ''}
+            </div>
+        </div>
+    `);
 }
 
 // Custom matcher for Select2 search
@@ -721,6 +882,7 @@ async function approveMapping(rowNum) {
     console.log(`Attempting to approve mapping for row ${rowNum}`);
 
     const nphiesCode = $(`#nphiesSelect${rowNum}`).val();
+    const hospitalCode = $(`#hospitalSelect${rowNum}`).val();
     const hospitalCodeId = hospitalCodes[rowNum - 1]?.id;
 
     if (!nphiesCode) {
@@ -728,8 +890,13 @@ async function approveMapping(rowNum) {
         return;
     }
 
+    if (!hospitalCode) {
+        showToast('Please select a hospital code before approving', 'warning');
+        return;
+    }
+
     if (!hospitalCodeId) {
-        showToast('Hospital code not found', 'error');
+        showToast('Hospital code ID not found', 'error');
         return;
     }
 
@@ -744,11 +911,13 @@ async function approveMapping(rowNum) {
     // Show loading state
     approveBtn.classList.add('loading');
     approveBtn.disabled = true;
+    approveBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Saving...';
 
     try {
         const requestBody = {
             hospitalCodeId: hospitalCodeId,
             nphiesCode: nphiesCode,
+            selectedHospitalCode: hospitalCode, // Include the selected hospital code
             sessionId: mappingSessionId,
             isApproved: true,
             rowNumber: rowNum
@@ -776,7 +945,7 @@ async function approveMapping(rowNum) {
             // Visual feedback for successful approval
             approveBtn.classList.remove('loading');
             approveBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-            approveBtn.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>Approved';
+            approveBtn.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>Approved ✓';
 
             // Add approved styling to row
             const row = document.getElementById(`row${rowNum}`);
@@ -785,6 +954,10 @@ async function approveMapping(rowNum) {
                 row.style.borderColor = '#28a745';
                 row.dataset.approved = 'true';
             }
+
+            // Disable both dropdowns after approval
+            $(`#nphiesSelect${rowNum}`).prop('disabled', true);
+            $(`#hospitalSelect${rowNum}`).prop('disabled', true);
 
             // Reinitialize Lucide icons
             if (typeof lucide !== 'undefined') {
@@ -813,17 +986,17 @@ async function approveMapping(rowNum) {
     }
 }
 
-// Edit mapping for a specific row
+// Updated editMapping function
 function editMapping(rowNum) {
-    console.log(`Editing mapping for row ${rowNum}`);
+    console.log(`Opening edit mode for row ${rowNum}`);
 
-    const nphiesSelect = document.getElementById(`nphiesSelect${rowNum}`);
-    if (nphiesSelect) {
-        nphiesSelect.focus();
-        $(`#nphiesSelect${rowNum}`).select2('open');
-        showToast(`Edit mode: Select different NPHIES code for row ${rowNum}`, 'info');
-    } else {
-        console.error(`NPHIES select not found for row ${rowNum}`);
+    // Focus on NPHIES dropdown for editing
+    const nphiesSelect = $(`#nphiesSelect${rowNum}`);
+    const hospitalSelect = $(`#hospitalSelect${rowNum}`);
+
+    if (nphiesSelect.length) {
+        nphiesSelect.select2('open');
+        showToast(`Edit mode: Modify NPHIES or Hospital code selection for row ${rowNum}`, 'info');
     }
 }
 
