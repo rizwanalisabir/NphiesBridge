@@ -8,6 +8,7 @@ using ClosedXML.Excel;
 using System.Security.Claims;
 using System.Collections.Generic;
 using System.Drawing;
+using NphiesBridge.Infrastructure.Repositories;
 
 namespace NphiesBridge.API.Controllers
 {
@@ -17,22 +18,24 @@ namespace NphiesBridge.API.Controllers
     public class IcdMappingController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAiFuzzyMatchingService _aiMatchingService;
+        //private readonly IAiFuzzyMatchingService _aiMatchingService;
+        private readonly IAiFuzzyMatchingService _aiFuzzyMatchingService;
         private readonly ILogger<IcdMappingController> _logger;
 
         public IcdMappingController(
             ApplicationDbContext context,
-            IAiFuzzyMatchingService aiMatchingService,
+            IAiFuzzyMatchingService aiFuzzyMatchingService,
             ILogger<IcdMappingController> logger)
         {
             _context = context;
-            _aiMatchingService = aiMatchingService;
+            _aiFuzzyMatchingService = aiFuzzyMatchingService;
             _logger = logger;
         }
 
         /// <summary>
         /// Get AI suggestion for a hospital code
         /// </summary>
+        // File: NphiesBridge.API/Controllers/IcdMappingController.cs
         [HttpPost("ai-suggestion")]
         public async Task<ActionResult<ApiResponse<AiSuggestionResponseDto>>> GetAiSuggestion([FromBody] AiSuggestionRequestDto request)
         {
@@ -40,38 +43,22 @@ namespace NphiesBridge.API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ApiResponse<AiSuggestionResponseDto>.ErrorResult("Invalid request data"));
+                    return BadRequest(ApiResponse<AiSuggestionResponseDto>.ErrorResult("Invalid request"));
                 }
 
-                _logger.LogInformation("Getting AI suggestion for hospital code: {HospitalCode}", request.HospitalCode);
+                var result = await _aiFuzzyMatchingService.GetAiSuggestionAsync(request);
 
-                var result = await _aiMatchingService.GetAiSuggestionAsync(request);
-
-                if (!result.IsSuccess)
+                if (result.IsSuccess)
                 {
-                    var failureResponse = new AiSuggestionResponseDto
-                    {
-                        Success = false,
-                        Message = result.ErrorMessage ?? "AI matching failed",
-                        Confidence = 0
-                    };
-                    return Ok(ApiResponse<AiSuggestionResponseDto>.SuccessResult(failureResponse));
+                    return Ok(ApiResponse<AiSuggestionResponseDto>.SuccessResult(result.Data));
                 }
 
-                return Ok(ApiResponse<AiSuggestionResponseDto>.SuccessResult(result.Data!));
+                return StatusCode(500, ApiResponse<AiSuggestionResponseDto>.ErrorResult(result.ErrorMessage ?? "AI matching failed"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting AI suggestion for hospital code: {HospitalCode}", request.HospitalCode);
-
-                var errorResponse = new AiSuggestionResponseDto
-                {
-                    Success = false,
-                    Message = "AI analysis failed. Please select manually.",
-                    Confidence = 0
-                };
-
-                return Ok(ApiResponse<AiSuggestionResponseDto>.SuccessResult(errorResponse));
+                _logger.LogError(ex, "Error in GetAiSuggestion API endpoint");
+                return StatusCode(500, ApiResponse<AiSuggestionResponseDto>.ErrorResult("Internal server error"));
             }
         }
 
@@ -312,7 +299,7 @@ namespace NphiesBridge.API.Controllers
             {
                 _logger.LogInformation("Processing bulk matching for session: {SessionId}", request.SessionId);
 
-                var result = await _aiMatchingService.ProcessBulkMatchingAsync(request);
+                var result = await _aiFuzzyMatchingService.ProcessBulkMatchingAsync(request);
 
                 if (!result.IsSuccess)
                 {

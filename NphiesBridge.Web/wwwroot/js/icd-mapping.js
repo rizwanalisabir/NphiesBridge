@@ -17,6 +17,7 @@ let apiUrls = {};
 // ============================================
 
 // Initialize mapping process when DOM is loaded
+// Update the initializeMappingProcess function to show loading indicators
 function initializeMappingProcess() {
     console.log('Initializing ICD mapping process...');
 
@@ -33,9 +34,13 @@ function initializeMappingProcess() {
         // Load NPHIES codes first
         loadNphiesCodes();
 
+        // Show initial loading message for 44K codes
+        updateProgressText('🚀 Initializing high-performance AI matching engine (44K+ codes)...');
+
         // Start the progressive mapping after data is loaded
         setTimeout(() => {
             if (!isPaused) {
+                updateProgressText('✅ AI engine ready! Starting progressive mapping...');
                 startProgressiveMapping();
             }
         }, 3000);
@@ -373,6 +378,7 @@ async function getAiSuggestion(rowNum) {
 
         console.log('AI suggestion request:', requestBody);
 
+        // NORMAL API CALL (no more temporary skip)
         const response = await fetch(`${apiUrls.baseUrl}/api/icdmapping/ai-suggestion`, {
             method: 'POST',
             headers: {
@@ -831,7 +837,13 @@ function updateCounters() {
 function updateProgressText(text) {
     const progressTextEl = document.getElementById('progressText');
     if (progressTextEl) {
-        progressTextEl.textContent = text;
+        // Add performance badge for fast processing
+        if (text.includes('completed') || text.includes('✅')) {
+            text += ' <span class="performance-badge">High Performance ⚡</span>';
+            progressTextEl.innerHTML = text;
+        } else {
+            progressTextEl.textContent = text;
+        }
     }
     console.log('Progress:', text);
 }

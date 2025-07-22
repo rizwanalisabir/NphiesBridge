@@ -78,10 +78,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddMemoryCache();
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024;
+});
+
 builder.Services.AddScoped<IHealthProviderRepository, HealthProviderRepository>();
 // Register the AI matching service
-builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
+//builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
+builder.Services.AddScoped<IAiFuzzyMatchingService, SimpleFuzzyMatchingService>();
 // Add after other service registrations
 builder.Services.AddScoped<IJwtService, JwtService>();
 
