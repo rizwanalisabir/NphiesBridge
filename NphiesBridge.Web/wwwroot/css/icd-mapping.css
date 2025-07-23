@@ -2221,3 +2221,77 @@ body {
     font-size: 10px;
     font-weight: bold;
 }
+/* Hospital code display (read-only) */
+.current-hospital-code {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.hospital-code-display {
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Enhanced mapping preview */
+.mapping-preview {
+    background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.mapping-title {
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.mapping-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.mapping-from, .mapping-to {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+}
+
+.mapping-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.mapping-code {
+    font-weight: 700;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.mapping-arrow {
+    text-align: center;
+    color: #28a745;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mapping-flow {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .mapping-arrow {
+        transform: rotate(90deg);
+    }
+}
