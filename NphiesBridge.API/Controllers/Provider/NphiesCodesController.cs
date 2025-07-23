@@ -81,6 +81,46 @@ namespace NphiesBridge.API.Controllers.Provider
             }
         }
 
+        [HttpGet("search-code")]
+        public async Task<ActionResult<List<NphiesCodeDto>>> SearchNphiesCodes(
+    [FromQuery] string q,
+    [FromQuery] int limit = 50)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(q) || q.Length < 3)
+                {
+                    return Ok(new List<NphiesCodeDto>());
+                }
+
+                var query = q.ToLowerInvariant().Trim();
+
+                var results = await _context.NphiesIcdCodes
+                    .AsNoTracking()
+                    .Where(code => code.IsActive &&
+                           (code.Code.ToLower().Contains(query) ||
+                            code.Description.ToLower().Contains(query)))
+                    .OrderBy(code => code.Code.ToLower().StartsWith(query) ? 0 : 1)
+                    .ThenBy(code => code.Code)
+                    .Take(limit)
+                    .Select(code => new NphiesCodeDto
+                    {
+                        Id = code.Code,
+                        Code = code.Code,
+                        Text = $"{code.Code} - {code.Description}",
+                        Description = code.Description
+                    })
+                    .ToListAsync();
+
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching NPHIES codes");
+                return StatusCode(500, "Search failed");
+            }
+        }
+
         /// <summary>
         /// Search NPHIES codes with pagination and filtering
         /// </summary>

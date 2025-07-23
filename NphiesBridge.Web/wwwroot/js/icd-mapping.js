@@ -128,7 +128,7 @@ function renderMappingRows() {
                 </div>
                 <div class="row-content" style="display: none;">
                     <div class="mapping-grid">
-                        <!-- User Data Section -->
+                        <!-- User Data Section (40% width) -->
                         <div class="mapping-section user-data-section">
                             <div class="section-header">
                                 <i data-lucide="user" style="width: 16px; height: 16px;"></i>
@@ -154,7 +154,7 @@ function renderMappingRows() {
                             ` : ''}
                         </div>
 
-                        <!-- AI Suggestion Section -->
+                        <!-- AI Suggestion Section (40% width) -->
                         <div class="mapping-section ai-suggestion-section">
                             <div class="section-header">
                                 <i data-lucide="brain" style="width: 16px; height: 16px;"></i>
@@ -169,31 +169,51 @@ function renderMappingRows() {
                             </div>
                         </div>
 
-                        <!-- Final Mapping Section -->
+                        <!-- Final Mapping Section (20% width) -->
                         <div class="mapping-section final-mapping-section">
                             <div class="section-header">
                                 <i data-lucide="target" style="width: 16px; height: 16px;"></i>
                                 Final Mapping
                             </div>
                             <div style="display: none;" id="finalMapping${rowNumber}">
+                                <!-- NPHIES Search Component -->
                                 <div class="dropdown-section">
                                     <div class="dropdown-label">
                                         <i data-lucide="database" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
-                                        NPHIES ICD Code (44K+ Options)
+                                        NPHIES ICD Code
+                                        <span class="search-performance-badge">⚡ Fast</span>
                                     </div>
-                                    <select class="form-select nphies-select" id="nphiesSelect${rowNumber}" style="width: 100%;" data-hospital-id="${hospitalCode.id}">
-                                        <option value="">Search and select NPHIES code...</option>
-                                    </select>
+                                    <div class="custom-search-container" id="nphiesSearch${rowNumber}">
+                                        <input type="text" 
+                                               class="custom-search-input" 
+                                               placeholder="Type 3+ chars to search 44K codes..."
+                                               data-row="${rowNumber}"
+                                               data-type="nphies"
+                                               autocomplete="off">
+                                        <div class="custom-search-results" style="display: none;"></div>
+                                        <input type="hidden" class="selected-value" name="selectedNphiesCode">
+                                    </div>
                                 </div>
+
+                                <!-- Hospital Codes Search Component -->
                                 <div class="dropdown-section mt-3">
                                     <div class="dropdown-label">
                                         <i data-lucide="hospital" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
-                                        Codes by Health Provider
+                                        Your Hospital Codes
                                     </div>
-                                    <select class="form-select hospital-select" id="hospitalSelect${rowNumber}" style="width: 100%;">
-                                        <option value="">Select your hospital code...</option>
-                                    </select>
+                                    <div class="custom-search-container" id="hospitalSearch${rowNumber}">
+                                        <input type="text" 
+                                               class="custom-search-input" 
+                                               placeholder="Search your codes..."
+                                               data-row="${rowNumber}"
+                                               data-type="hospital"
+                                               autocomplete="off">
+                                        <div class="custom-search-results" style="display: none;"></div>
+                                        <input type="hidden" class="selected-value" name="selectedHospitalCode">
+                                    </div>
                                 </div>
+
+                                <!-- Mapping Preview -->
                                 <div class="mapping-preview mt-3" id="mappingPreview${rowNumber}" style="display: none;">
                                     <div class="mapping-arrow">
                                         <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i>
@@ -209,14 +229,16 @@ function renderMappingRows() {
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Action Buttons -->
                                 <div class="action-buttons mt-3">
                                     <button class="btn-action btn-approve" onclick="approveMapping(${rowNumber})" disabled style="opacity: 0.6;">
                                         <i data-lucide="check" style="width: 16px; height: 16px;"></i>
-                                        Approve Mapping
+                                        Approve
                                     </button>
                                     <button class="btn-action btn-edit" onclick="editMapping(${rowNumber})">
                                         <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
-                                        Modify Selection
+                                        Edit
                                     </button>
                                 </div>
                             </div>
@@ -230,15 +252,15 @@ function renderMappingRows() {
     // Insert the generated HTML
     mappingRowsContainer.innerHTML = rowsHtml;
 
-    // Initialize Select2 for all rows after rendering
-    initializeAllSelect2Dropdowns();
+    // Initialize custom search components instead of Select2
+    initializeAllCustomSearchComponents();
 
     // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 
-    console.log(`Rendered ${hospitalCodes.length} mapping rows with dual searchable dropdowns`);
+    console.log(`Rendered ${hospitalCodes.length} mapping rows with high-performance custom search`);
 }
 // Load NPHIES codes from server
 async function loadNphiesCodes() {
@@ -332,6 +354,7 @@ function processNextRow() {
 }
 
 // Get AI suggestion from server
+// Updated function with UI breathing room
 async function getAiSuggestion(rowNum) {
     try {
         const hospitalCode = hospitalCodes[rowNum - 1];
@@ -342,30 +365,8 @@ async function getAiSuggestion(rowNum) {
 
         console.log(`Getting AI suggestion for row ${rowNum}:`, hospitalCode);
 
-        // Update processing message
-        const processingElement = document.getElementById(`processing${rowNum}`);
-        if (processingElement) {
-            const messageSpan = processingElement.querySelector('span');
-            if (messageSpan) {
-                const messages = [
-                    'Analyzing medical terminology...',
-                    'Searching through 44K codes...',
-                    'Applying fuzzy matching...',
-                    'Calculating confidence scores...',
-                    'Finalizing recommendations...'
-                ];
-
-                let messageIndex = 0;
-                const messageInterval = setInterval(() => {
-                    if (messageIndex < messages.length) {
-                        messageSpan.textContent = messages[messageIndex];
-                        messageIndex++;
-                    } else {
-                        clearInterval(messageInterval);
-                    }
-                }, 800);
-            }
-        }
+        // Update processing message with breathing room
+        await updateProcessingMessages(rowNum);
 
         const requestBody = {
             hospitalCodeId: hospitalCode.id,
@@ -378,7 +379,9 @@ async function getAiSuggestion(rowNum) {
 
         console.log('AI suggestion request:', requestBody);
 
-        // NORMAL API CALL (no more temporary skip)
+        // Allow UI to breathe before API call
+        await new Promise(resolve => setTimeout(resolve, 50));
+
         const response = await fetch(`${apiUrls.baseUrl}/api/icdmapping/ai-suggestion`, {
             method: 'POST',
             headers: {
@@ -395,29 +398,27 @@ async function getAiSuggestion(rowNum) {
         const result = await response.json();
         console.log(`AI suggestion result for row ${rowNum}:`, result);
 
-        // Extract the actual AI response from the API response wrapper
         const aiResult = result.success ? result.data : result;
 
-        // Simulate realistic processing time (1-3 seconds additional)
-        const processingTime = 1000 + Math.random() * 2000;
+        // Allow UI to update before completing row
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
-        setTimeout(() => {
-            if (!isPaused) {
-                completeRow(rowNum, aiResult);
-                currentRow++;
-                isProcessing = false;
+        if (!isPaused) {
+            completeRow(rowNum, aiResult);
+            currentRow++;
+            isProcessing = false;
 
-                // Continue to next row after a brief pause
-                setTimeout(() => {
+            // Give UI time to update before next row
+            setTimeout(() => {
+                requestAnimationFrame(() => {
                     startProgressiveMapping();
-                }, 800);
-            }
-        }, processingTime);
+                });
+            }, 100); // Reduced from 800ms for faster processing
+        }
 
     } catch (error) {
         console.error(`Error getting AI suggestion for row ${rowNum}:`, error);
 
-        // Show error state but continue processing
         const aiResult = {
             success: false,
             suggestedCode: null,
@@ -426,80 +427,111 @@ async function getAiSuggestion(rowNum) {
             error: true
         };
 
+        // Allow UI breathing room on error too
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
         setTimeout(() => {
             completeRow(rowNum, aiResult);
             currentRow++;
             isProcessing = false;
-            setTimeout(() => startProgressiveMapping(), 800);
-        }, 1000);
+            setTimeout(() => requestAnimationFrame(() => startProgressiveMapping()), 100);
+        }, 100);
+    }
+}
+
+// New function for smooth processing message updates
+async function updateProcessingMessages(rowNum) {
+    const processingElement = document.getElementById(`processing${rowNum}`);
+    if (processingElement) {
+        const messageSpan = processingElement.querySelector('span');
+        if (messageSpan) {
+            const messages = [
+                'Analyzing medical terminology...',
+                'Searching through 44K codes...',
+                'Applying fuzzy matching...',
+                'Calculating confidence scores...',
+                'Finalizing recommendations...'
+            ];
+
+            for (let i = 0; i < messages.length; i++) {
+                messageSpan.textContent = messages[i];
+                // Allow UI to update between message changes
+                await new Promise(resolve => setTimeout(resolve, 200));
+                if (isPaused) break;
+            }
+        }
     }
 }
 // Complete processing for a row
+// Update the completeRow function to be more responsive
 function completeRow(rowNum, aiResult) {
     console.log(`Completing row ${rowNum}:`, aiResult);
 
-    const row = document.getElementById(`row${rowNum}`);
-    if (!row) {
-        console.error(`Row element not found: row${rowNum}`);
-        return;
-    }
-
-    const rowNumber = row.querySelector('.row-number');
-    const statusDiv = row.querySelector('.row-status');
-    const statusText = row.querySelector('.status-text');
-    const processing = document.getElementById(`processing${rowNum}`);
-    const suggestion = document.getElementById(`suggestion${rowNum}`);
-    const finalMapping = document.getElementById(`finalMapping${rowNum}`);
-
-    // Update to completed state
-    row.classList.remove('processing');
-    row.classList.add('completed');
-
-    if (rowNumber) {
-        rowNumber.classList.remove('processing');
-        rowNumber.classList.add('completed');
-    }
-
-    if (statusDiv) {
-        statusDiv.classList.remove('processing');
-        statusDiv.classList.add('completed');
-    }
-
-    if (statusText) {
-        statusText.textContent = aiResult.success ? 'AI Match Found' : 'Manual Review Required';
-    }
-
-    // Hide processing indicator
-    if (processing) processing.style.display = 'none';
-
-    // Show AI suggestion
-    if (suggestion) {
-        if (aiResult.success && aiResult.suggestedCode) {
-            suggestion.innerHTML = createAiSuggestionHtml(aiResult);
-        } else {
-            suggestion.innerHTML = createNoMatchHtml(aiResult.message);
+    // Use requestAnimationFrame for smooth DOM updates
+    requestAnimationFrame(() => {
+        const row = document.getElementById(`row${rowNum}`);
+        if (!row) {
+            console.error(`Row element not found: row${rowNum}`);
+            return;
         }
-        suggestion.style.display = 'block';
-    }
 
-    // Show final mapping section
-    if (finalMapping) finalMapping.style.display = 'block';
+        const rowNumber = row.querySelector('.row-number');
+        const statusDiv = row.querySelector('.row-status');
+        const statusText = row.querySelector('.status-text');
+        const processing = document.getElementById(`processing${rowNum}`);
+        const suggestion = document.getElementById(`suggestion${rowNum}`);
+        const finalMapping = document.getElementById(`finalMapping${rowNum}`);
 
-    // Initialize Select2 for this row
-    initializeSelect2ForRow(rowNum, aiResult);
+        // Update to completed state
+        row.classList.remove('processing');
+        row.classList.add('completed');
 
-    completedRows++;
-    updateCounters();
+        if (rowNumber) {
+            rowNumber.classList.remove('processing');
+            rowNumber.classList.add('completed');
+        }
 
-    if (completedRows === totalRows) {
-        updateProgressText('🎉 All mappings completed! Review and approve the AI suggestions.');
-        showToast('All mappings completed successfully!', 'success');
+        if (statusDiv) {
+            statusDiv.classList.remove('processing');
+            statusDiv.classList.add('completed');
+        }
 
-        // Auto-scroll to top for review
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-        updateProgressText(`✅ Completed ${completedRows}/${totalRows} mappings. Processing next...`);
-    }
+        if (statusText) {
+            statusText.textContent = aiResult.success ? 'AI Match Found' : 'Manual Review Required';
+        }
+
+        // Hide processing indicator
+        if (processing) processing.style.display = 'none';
+
+        // Show AI suggestion
+        if (suggestion) {
+            if (aiResult.success && aiResult.suggestedCode) {
+                suggestion.innerHTML = createAiSuggestionHtml(aiResult);
+            } else {
+                suggestion.innerHTML = createNoMatchHtml(aiResult.message);
+            }
+            suggestion.style.display = 'block';
+        }
+
+        // Show final mapping section
+        if (finalMapping) finalMapping.style.display = 'block';
+
+        // Initialize Select2 for this row in next frame
+        requestAnimationFrame(() => {
+            initializeSelect2ForRow(rowNum, aiResult);
+        });
+
+        completedRows++;
+        updateCounters();
+
+        if (completedRows === totalRows) {
+            updateProgressText('🎉 All mappings completed! Review and approve the AI suggestions.');
+            showToast('All mappings completed successfully!', 'success');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            updateProgressText(`✅ Completed ${completedRows}/${totalRows} mappings. Processing next...`);
+        }
+    });
 }
 
 // ============================================
@@ -558,126 +590,57 @@ function getConfidenceText(confidence) {
 // SELECT2 INTEGRATION FUNCTIONS
 // ============================================
 
-// Updated Select2 initialization for individual rows
-// Updated Select2 initialization for individual rows
+// Update the individual row initialization
 function initializeSelect2ForRow(rowNum, aiResult = null) {
-    console.log(`Initializing dual Select2 dropdowns for row ${rowNum}`);
+    console.log(`Initializing custom search for row ${rowNum}`);
 
     try {
-        const currentHospitalCode = hospitalCodes[rowNum - 1];
+        // Setup custom search for this row
+        const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+        const hospitalInput = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`);
 
-        // 1. Initialize NPHIES codes dropdown (44K+ codes)
-        const nphiesSelectId = `#nphiesSelect${rowNum}`;
-
-        if (!$(nphiesSelectId).length) {
-            console.warn(`NPHIES select element not found for row ${rowNum}`);
-            return;
+        if (nphiesInput) {
+            searchComponent.setupSearchInput(nphiesInput);
         }
 
-        // Destroy existing Select2 if it exists
-        if ($(nphiesSelectId).hasClass('select2-hidden-accessible')) {
-            $(nphiesSelectId).select2('destroy');
-        }
-
-        // Initialize NPHIES Select2
-        $(nphiesSelectId).select2({
-            data: nphiesCodes,
-            placeholder: 'Type to search 44K+ NPHIES codes...',
-            allowClear: true,
-            width: '100%',
-            templateResult: formatNphiesCode,
-            templateSelection: formatNphiesSelection,
-            escapeMarkup: function (markup) { return markup; },
-            matcher: customMatcher,
-            dropdownParent: $(nphiesSelectId).parent(),
-            minimumInputLength: 1, // Start searching after 1 character
-            language: {
-                inputTooShort: function () {
-                    return 'Type to search NPHIES codes...';
-                },
-                searching: function () {
-                    return 'Searching 44K+ codes...';
-                },
-                noResults: function () {
-                    return 'No NPHIES codes found';
-                }
-            }
-        });
-
-        // 2. Initialize Hospital codes dropdown (all user's codes)
-        const hospitalSelectId = `#hospitalSelect${rowNum}`;
-
-        if ($(hospitalSelectId).length) {
-            // Destroy existing Select2 if it exists
-            if ($(hospitalSelectId).hasClass('select2-hidden-accessible')) {
-                $(hospitalSelectId).select2('destroy');
-            }
-
-            // Prepare hospital codes data for Select2
-            const hospitalCodesForSelect2 = hospitalCodes.map(code => ({
-                id: code.hospitalCode,
-                text: `${code.hospitalCode} - ${code.diagnosisName}`,
-                description: code.diagnosisDescription || 'No description',
-                fullData: code
-            }));
-
-            // Initialize Hospital Select2
-            $(hospitalSelectId).select2({
-                data: hospitalCodesForSelect2,
-                placeholder: 'Search your hospital codes...',
-                allowClear: false,
-                width: '100%',
-                templateResult: formatHospitalCode,
-                templateSelection: formatHospitalSelection,
-                escapeMarkup: function (markup) { return markup; },
-                matcher: customMatcher,
-                dropdownParent: $(hospitalSelectId).parent(),
-                language: {
-                    searching: function () {
-                        return 'Searching your codes...';
-                    },
-                    noResults: function () {
-                        return 'No matching hospital codes';
-                    }
-                }
-            });
+        if (hospitalInput) {
+            searchComponent.setupSearchInput(hospitalInput);
 
             // Pre-select current hospital code
-            $(hospitalSelectId).val(currentHospitalCode.hospitalCode).trigger('change');
+            const currentHospitalCode = hospitalCodes[rowNum - 1];
+            if (currentHospitalCode) {
+                const hiddenInput = document.querySelector(`#hospitalSearch${rowNum} .selected-value`);
+                hospitalInput.value = `${currentHospitalCode.hospitalCode} - ${currentHospitalCode.diagnosisName}`;
+                hospitalInput.classList.add('has-selection');
+                hiddenInput.value = currentHospitalCode.hospitalCode;
+            }
         }
 
         // Pre-select AI suggestion if available and high confidence
         if (aiResult && aiResult.success && aiResult.confidence >= 70 && aiResult.suggestedCode) {
-            const suggestedCodeId = aiResult.suggestedCode.code;
-            console.log(`Pre-selecting AI suggestion: ${suggestedCodeId}`);
-            $(nphiesSelectId).val(suggestedCodeId).trigger('change');
+            const nphiesHiddenInput = document.querySelector(`#nphiesSearch${rowNum} .selected-value`);
+
+            nphiesInput.value = `${aiResult.suggestedCode.code} - ${aiResult.suggestedCode.description}`;
+            nphiesInput.classList.add('has-selection');
+            nphiesHiddenInput.value = aiResult.suggestedCode.code;
+
+            console.log(`Pre-selected AI suggestion for row ${rowNum}: ${aiResult.suggestedCode.code}`);
         }
 
-        // Add change event listeners
-        $(nphiesSelectId).off('change.mapping').on('change.mapping', function () {
-            updateMappingPreview(rowNum);
-            toggleApproveButton(rowNum);
-        });
-
-        $(hospitalSelectId).off('change.mapping').on('change.mapping', function () {
-            updateMappingPreview(rowNum);
-            toggleApproveButton(rowNum);
-        });
-
-        console.log(`Dual Select2 dropdowns initialized successfully for row ${rowNum}`);
-
-        // Update preview initially
+        // Update mapping preview and button state
         updateMappingPreview(rowNum);
+        toggleApproveButton(rowNum);
+
+        console.log(`Custom search initialized successfully for row ${rowNum}`);
 
     } catch (error) {
-        console.error(`Error initializing Select2 for row ${rowNum}:`, error);
-        showToast(`Failed to initialize dropdowns for row ${rowNum}`, 'error');
+        console.error(`Error initializing custom search for row ${rowNum}:`, error);
     }
 }
 // Toggle approve button based on selections
 function toggleApproveButton(rowNum) {
-    const nphiesValue = $(`#nphiesSelect${rowNum}`).val();
-    const hospitalValue = $(`#hospitalSelect${rowNum}`).val();
+    const nphiesValue = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value;
+    const hospitalValue = document.querySelector(`#hospitalSearch${rowNum} .selected-value`)?.value;
     const approveBtn = document.querySelector(`#row${rowNum} .btn-approve`);
 
     if (approveBtn) {
@@ -688,25 +651,23 @@ function toggleApproveButton(rowNum) {
         } else {
             approveBtn.disabled = true;
             approveBtn.style.opacity = '0.6';
-            approveBtn.style.background = '';
+            approveBtn.style.background = '#6c757d';
         }
     }
 }
 
-// Update mapping preview
+// Update these functions to work with custom search
 function updateMappingPreview(rowNum) {
-    const nphiesValue = $(`#nphiesSelect${rowNum}`).val();
-    const hospitalValue = $(`#hospitalSelect${rowNum}`).val();
+    const nphiesValue = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value;
+    const hospitalValue = document.querySelector(`#hospitalSearch${rowNum} .selected-value`)?.value;
     const previewDiv = document.getElementById(`mappingPreview${rowNum}`);
     const selectedHospitalDiv = document.getElementById(`selectedHospitalCode${rowNum}`);
     const selectedNphiesDiv = document.getElementById(`selectedNphiesCode${rowNum}`);
 
     if (nphiesValue && hospitalValue && previewDiv && selectedHospitalDiv && selectedNphiesDiv) {
         // Get display text for selected options
-        const nphiesText = $(`#nphiesSelect${rowNum} option:selected`).text() ||
-            $(`#nphiesSelect${rowNum}`).select2('data')[0]?.text || nphiesValue;
-        const hospitalText = $(`#hospitalSelect${rowNum} option:selected`).text() ||
-            $(`#hospitalSelect${rowNum}`).select2('data')[0]?.text || hospitalValue;
+        const nphiesText = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`)?.value || nphiesValue;
+        const hospitalText = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`)?.value || hospitalValue;
 
         selectedHospitalDiv.textContent = hospitalText;
         selectedNphiesDiv.textContent = nphiesText;
@@ -727,21 +688,367 @@ function formatHospitalSelection(code) {
     return code.text;
 }
 
-// Initialize Select2 for all rendered rows
-function initializeAllSelect2Dropdowns() {
-    if (!nphiesCodes || nphiesCodes.length === 0) {
-        console.warn('NPHIES codes not loaded yet, skipping Select2 initialization');
-        return;
+// Update the initialization function
+function initializeAllCustomSearchComponents() {
+    console.log('Initializing custom search components for all rows...');
+
+    // Initialize the search component if not already done
+    if (typeof searchComponent === 'undefined') {
+        window.searchComponent = new HighPerformanceSearch();
+        searchComponent.initialize();
     }
 
-    console.log('Initializing Select2 dropdowns for all rows...');
+    // Initialize search inputs for all rendered rows
+    searchComponent.initializeSearchInputs();
+}
+// Custom Search Component Class
+class HighPerformanceSearch {
+    constructor() {
+        this.searchCache = new Map();
+        this.debounceTimers = new Map();
+        this.currentRequests = new Map();
+        this.minSearchLength = 3;
+        this.maxResults = 50;
+        this.debounceDelay = 300;
+    }
 
-    hospitalCodes.forEach((hospitalCode, index) => {
-        const rowNumber = index + 1;
-        initializeSelect2ForRow(rowNumber);
-    });
+    initialize() {
+        // Initialize all search inputs
+        document.addEventListener('click', this.handleOutsideClick.bind(this));
+        document.addEventListener('keydown', this.handleKeyNavigation.bind(this));
+
+        // Initialize existing search inputs
+        this.initializeSearchInputs();
+    }
+
+    initializeSearchInputs() {
+        const searchInputs = document.querySelectorAll('.custom-search-input');
+        searchInputs.forEach(input => {
+            this.setupSearchInput(input);
+        });
+    }
+
+    setupSearchInput(input) {
+        const rowNum = input.dataset.row;
+        const searchType = input.dataset.type;
+
+        // Remove existing listeners
+        input.removeEventListener('input', this.handleSearchInput);
+        input.removeEventListener('focus', this.handleSearchFocus);
+        input.removeEventListener('blur', this.handleSearchBlur);
+
+        // Add event listeners
+        input.addEventListener('input', (e) => this.handleSearchInput(e, rowNum, searchType));
+        input.addEventListener('focus', (e) => this.handleSearchFocus(e, rowNum, searchType));
+        input.addEventListener('blur', (e) => this.handleSearchBlur(e, rowNum, searchType));
+    }
+
+    handleSearchInput(event, rowNum, searchType) {
+        const input = event.target;
+        const query = input.value.trim();
+        const containerId = `${searchType}Search${rowNum}`;
+        const resultsContainer = document.querySelector(`#${containerId} .custom-search-results`);
+
+        // Clear previous timer
+        const timerKey = `${rowNum}-${searchType}`;
+        if (this.debounceTimers.has(timerKey)) {
+            clearTimeout(this.debounceTimers.get(timerKey));
+        }
+
+        // Cancel previous request
+        if (this.currentRequests.has(timerKey)) {
+            this.currentRequests.get(timerKey).abort();
+        }
+
+        if (query.length < this.minSearchLength) {
+            resultsContainer.innerHTML = `
+                <div class="search-min-chars">
+                    Type at least ${this.minSearchLength} characters to search...
+                </div>
+            `;
+            resultsContainer.style.display = 'block';
+            return;
+        }
+
+        // Show loading
+        resultsContainer.innerHTML = `
+            <div class="search-loading">
+                <div class="spinner-border spinner-border-sm me-2"></div>
+                Searching...
+            </div>
+        `;
+        resultsContainer.style.display = 'block';
+
+        // Debounced search
+        const timer = setTimeout(() => {
+            this.performSearch(query, rowNum, searchType);
+        }, this.debounceDelay);
+
+        this.debounceTimers.set(timerKey, timer);
+    }
+
+    async performSearch(query, rowNum, searchType) {
+        const timerKey = `${rowNum}-${searchType}`;
+        const cacheKey = `${searchType}-${query.toLowerCase()}`;
+        const containerId = `${searchType}Search${rowNum}`;
+        const resultsContainer = document.querySelector(`#${containerId} .custom-search-results`);
+
+        try {
+            let results;
+
+            // Check cache first
+            if (this.searchCache.has(cacheKey)) {
+                results = this.searchCache.get(cacheKey);
+                console.log(`Cache hit for: ${cacheKey}`);
+            } else {
+                // Perform API search
+                const startTime = performance.now();
+                results = await this.searchApi(query, searchType);
+                const endTime = performance.now();
+
+                console.log(`Search completed in ${Math.round(endTime - startTime)}ms`);
+
+                // Cache results
+                this.searchCache.set(cacheKey, results);
+            }
+
+            // Display results
+            this.displayResults(results, resultsContainer, rowNum, searchType);
+
+        } catch (error) {
+            console.error('Search error:', error);
+            resultsContainer.innerHTML = `
+                <div class="search-no-results">
+                    Search failed. Please try again.
+                </div>
+            `;
+        }
+    }
+
+    async searchApi(query, searchType) {
+        if (searchType === 'nphies') {
+            // Server-side search for NPHIES codes
+            const response = await fetch(`${apiUrls.baseUrl}/api/nphiescodes/search-code?q=${encodeURIComponent(query)}&limit=${this.maxResults}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } else {
+            // Client-side search for hospital codes
+            return this.searchHospitalCodes(query);
+        }
+    }
+
+    searchHospitalCodes(query) {
+        const queryLower = query.toLowerCase();
+        return hospitalCodes
+            .filter(code =>
+                code.hospitalCode.toLowerCase().includes(queryLower) ||
+                code.diagnosisName.toLowerCase().includes(queryLower) ||
+                (code.diagnosisDescription && code.diagnosisDescription.toLowerCase().includes(queryLower))
+            )
+            .slice(0, this.maxResults)
+            .map(code => ({
+                id: code.hospitalCode,
+                text: `${code.hospitalCode} - ${code.diagnosisName}`,
+                code: code.hospitalCode,
+                description: code.diagnosisName
+            }));
+    }
+
+    displayResults(results, container, rowNum, searchType) {
+        if (!results || results.length === 0) {
+            container.innerHTML = `
+                <div class="search-no-results">
+                    No results found. Try different keywords.
+                </div>
+            `;
+            return;
+        }
+
+        const resultHtml = results.map((result, index) => `
+            <div class="search-result-item" 
+                 data-value="${result.id || result.code}" 
+                 data-row="${rowNum}" 
+                 data-type="${searchType}"
+                 data-index="${index}">
+                <div class="result-code">${result.code || result.id}</div>
+                <div class="result-description">${result.description || result.text}</div>
+            </div>
+        `).join('');
+
+        container.innerHTML = resultHtml;
+
+        // Add click handlers
+        container.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => this.selectResult(item, rowNum, searchType));
+        });
+    }
+
+    selectResult(item, rowNum, searchType) {
+        const value = item.dataset.value;
+        const code = item.querySelector('.result-code').textContent;
+        const description = item.querySelector('.result-description').textContent;
+
+        const containerId = `${searchType}Search${rowNum}`;
+        const input = document.querySelector(`#${containerId} .custom-search-input`);
+        const hiddenInput = document.querySelector(`#${containerId} .selected-value`);
+        const resultsContainer = document.querySelector(`#${containerId} .custom-search-results`);
+
+        // Update input values
+        input.value = `${code} - ${description}`;
+        input.classList.add('has-selection');
+        hiddenInput.value = value;
+
+        // Hide results
+        resultsContainer.style.display = 'none';
+
+        // Update mapping preview and enable approve button
+        this.updateMappingPreview(rowNum);
+        this.toggleApproveButton(rowNum);
+
+        console.log(`Selected ${searchType}: ${value}`);
+    }
+
+    handleSearchFocus(event, rowNum, searchType) {
+        const input = event.target;
+        if (input.value && !input.classList.contains('has-selection')) {
+            const resultsContainer = input.parentElement.querySelector('.custom-search-results');
+            if (resultsContainer.children.length > 0) {
+                resultsContainer.style.display = 'block';
+            }
+        }
+    }
+
+    handleSearchBlur(event, rowNum, searchType) {
+        // Delay hiding to allow click on results
+        setTimeout(() => {
+            const resultsContainer = event.target.parentElement.querySelector('.custom-search-results');
+            if (resultsContainer && !resultsContainer.matches(':hover')) {
+                resultsContainer.style.display = 'none';
+            }
+        }, 200);
+    }
+
+    handleOutsideClick(event) {
+        if (!event.target.closest('.custom-search-container')) {
+            document.querySelectorAll('.custom-search-results').forEach(container => {
+                container.style.display = 'none';
+            });
+        }
+    }
+
+    handleKeyNavigation(event) {
+        const activeElement = document.activeElement;
+        if (!activeElement.classList.contains('custom-search-input')) return;
+
+        const resultsContainer = activeElement.parentElement.querySelector('.custom-search-results');
+        if (!resultsContainer || resultsContainer.style.display === 'none') return;
+
+        const items = resultsContainer.querySelectorAll('.search-result-item');
+        const currentHighlighted = resultsContainer.querySelector('.search-result-item.highlighted');
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                this.highlightNext(items, currentHighlighted);
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                this.highlightPrevious(items, currentHighlighted);
+                break;
+            case 'Enter':
+                event.preventDefault();
+                if (currentHighlighted) {
+                    currentHighlighted.click();
+                }
+                break;
+            case 'Escape':
+                resultsContainer.style.display = 'none';
+                break;
+        }
+    }
+
+    highlightNext(items, current) {
+        if (current) current.classList.remove('highlighted');
+
+        const currentIndex = current ? Array.from(items).indexOf(current) : -1;
+        const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+
+        items[nextIndex].classList.add('highlighted');
+        items[nextIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    highlightPrevious(items, current) {
+        if (current) current.classList.remove('highlighted');
+
+        const currentIndex = current ? Array.from(items).indexOf(current) : items.length;
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+
+        items[prevIndex].classList.add('highlighted');
+        items[prevIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    updateMappingPreview(rowNum) {
+        const nphiesValue = document.querySelector(`#nphiesSearch${rowNum} .selected-value`).value;
+        const hospitalValue = document.querySelector(`#hospitalSearch${rowNum} .selected-value`).value;
+
+        // Your existing preview update logic
+        updateMappingPreview(rowNum);
+    }
+
+    toggleApproveButton(rowNum) {
+        const nphiesValue = document.querySelector(`#nphiesSearch${rowNum} .selected-value`).value;
+        const hospitalValue = document.querySelector(`#hospitalSearch${rowNum} .selected-value`).value;
+
+        // Your existing button toggle logic
+        toggleApproveButton(rowNum);
+    }
 }
 
+// Initialize the search component
+const searchComponent = new HighPerformanceSearch();
+
+// Update your existing functions
+function initializeAllSelect2Dropdowns() {
+    // Remove Select2 initialization
+    // Initialize custom search instead
+    searchComponent.initializeSearchInputs();
+}
+
+function initializeSelect2ForRow(rowNum, aiResult = null) {
+    // Setup custom search for this row
+    const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+    const hospitalInput = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`);
+
+    if (nphiesInput) searchComponent.setupSearchInput(nphiesInput);
+    if (hospitalInput) searchComponent.setupSearchInput(hospitalInput);
+
+    // Pre-select AI suggestion if available
+    if (aiResult && aiResult.success && aiResult.confidence >= 70 && aiResult.suggestedCode) {
+        const input = nphiesInput;
+        const hiddenInput = document.querySelector(`#nphiesSearch${rowNum} .selected-value`);
+
+        input.value = `${aiResult.suggestedCode.code} - ${aiResult.suggestedCode.description}`;
+        input.classList.add('has-selection');
+        hiddenInput.value = aiResult.suggestedCode.code;
+
+        searchComponent.updateMappingPreview(rowNum);
+        searchComponent.toggleApproveButton(rowNum);
+    }
+}
+
+// Initialize when DOM loads
+document.addEventListener('DOMContentLoaded', function () {
+    searchComponent.initialize();
+});
 // Format hospital code for display in dropdown
 function formatHospitalCode(code) {
     if (!code.id) return code.text;
@@ -893,17 +1200,31 @@ function pauseProcessing() {
 async function approveMapping(rowNum) {
     console.log(`Attempting to approve mapping for row ${rowNum}`);
 
-    const nphiesCode = $(`#nphiesSelect${rowNum}`).val();
-    const hospitalCode = $(`#hospitalSelect${rowNum}`).val();
+    // Get values from custom search components (updated selectors)
+    const nphiesCode = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value;
+    const hospitalCode = document.querySelector(`#hospitalSearch${rowNum} .selected-value`)?.value;
     const hospitalCodeId = hospitalCodes[rowNum - 1]?.id;
 
+    // Validation checks
     if (!nphiesCode) {
         showToast('Please select a NPHIES code before approving', 'warning');
+        // Highlight the NPHIES search input
+        const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+        if (nphiesInput) {
+            nphiesInput.style.borderColor = '#dc3545';
+            setTimeout(() => nphiesInput.style.borderColor = '', 3000);
+        }
         return;
     }
 
     if (!hospitalCode) {
         showToast('Please select a hospital code before approving', 'warning');
+        // Highlight the hospital search input
+        const hospitalInput = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`);
+        if (hospitalInput) {
+            hospitalInput.style.borderColor = '#dc3545';
+            setTimeout(() => hospitalInput.style.borderColor = '', 3000);
+        }
         return;
     }
 
@@ -920,22 +1241,34 @@ async function approveMapping(rowNum) {
 
     const originalContent = approveBtn.innerHTML;
 
-    // Show loading state
+    // Show loading state with better visual feedback
     approveBtn.classList.add('loading');
     approveBtn.disabled = true;
-    approveBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Saving...';
+    approveBtn.innerHTML = `
+        <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        Saving...
+    `;
 
     try {
         const requestBody = {
             hospitalCodeId: hospitalCodeId,
             nphiesCode: nphiesCode,
-            selectedHospitalCode: hospitalCode, // Include the selected hospital code
+            selectedHospitalCode: hospitalCode,
             sessionId: mappingSessionId,
             isApproved: true,
             rowNumber: rowNum
         };
 
         console.log('Saving mapping:', requestBody);
+
+        // Add loading indicator to the row
+        const row = document.getElementById(`row${rowNum}`);
+        if (row) {
+            row.style.opacity = '0.8';
+            row.style.pointerEvents = 'none';
+        }
 
         const response = await fetch(`${apiUrls.baseUrl}/api/icdmapping/save-mapping`, {
             method: 'POST',
@@ -957,26 +1290,66 @@ async function approveMapping(rowNum) {
             // Visual feedback for successful approval
             approveBtn.classList.remove('loading');
             approveBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-            approveBtn.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>Approved ✓';
+            approveBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+            approveBtn.innerHTML = `
+                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                Approved ✓
+            `;
 
             // Add approved styling to row
-            const row = document.getElementById(`row${rowNum}`);
             if (row) {
-                row.style.background = 'rgba(40, 167, 69, 0.08)';
+                row.style.background = 'linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.05))';
                 row.style.borderColor = '#28a745';
+                row.style.borderWidth = '2px';
                 row.dataset.approved = 'true';
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
             }
 
-            // Disable both dropdowns after approval
-            $(`#nphiesSelect${rowNum}`).prop('disabled', true);
-            $(`#hospitalSelect${rowNum}`).prop('disabled', true);
+            // Disable both search inputs after approval (custom search version)
+            const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+            const hospitalInput = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`);
+            const editBtn = document.querySelector(`#row${rowNum} .btn-edit`);
+
+            if (nphiesInput) {
+                nphiesInput.disabled = true;
+                nphiesInput.style.background = '#f8f9fa';
+                nphiesInput.style.cursor = 'not-allowed';
+            }
+
+            if (hospitalInput) {
+                hospitalInput.disabled = true;
+                hospitalInput.style.background = '#f8f9fa';
+                hospitalInput.style.cursor = 'not-allowed';
+            }
+
+            // Update edit button to "Locked" state
+            if (editBtn) {
+                editBtn.innerHTML = `
+                    <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+                    Locked
+                `;
+                editBtn.disabled = true;
+                editBtn.style.background = '#6c757d';
+                editBtn.style.cursor = 'not-allowed';
+            }
+
+            // Add success animation
+            approveBtn.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                if (approveBtn) approveBtn.style.transform = 'scale(1)';
+            }, 200);
 
             // Reinitialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
 
-            showToast(`Row ${rowNum} mapping approved successfully!`, 'success');
+            showToast(`Row ${rowNum} mapping approved and locked successfully!`, 'success');
+
+            // Update global progress if all rows are completed
+            updateGlobalProgress();
+
         } else {
             throw new Error(result.message || 'Failed to save mapping');
         }
@@ -989,6 +1362,22 @@ async function approveMapping(rowNum) {
         approveBtn.disabled = false;
         approveBtn.innerHTML = originalContent;
 
+        // Reset row state
+        if (row) {
+            row.style.opacity = '1';
+            row.style.pointerEvents = 'auto';
+        }
+
+        // Show error styling
+        approveBtn.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+        approveBtn.style.color = 'white';
+        setTimeout(() => {
+            if (approveBtn && !approveBtn.dataset.approved) {
+                approveBtn.style.background = '';
+                approveBtn.style.color = '';
+            }
+        }, 3000);
+
         showToast('Failed to approve mapping. Please try again.', 'error');
 
         // Reinitialize Lucide icons
@@ -998,17 +1387,128 @@ async function approveMapping(rowNum) {
     }
 }
 
-// Updated editMapping function
+// Helper function to update global progress
+function updateGlobalProgress() {
+    const approvedRows = document.querySelectorAll('.mapping-row[data-approved="true"]').length;
+    const progressPercentage = Math.round((approvedRows / totalRows) * 100);
+
+    // Update progress text
+    updateProgressText(`✅ ${approvedRows}/${totalRows} mappings approved (${progressPercentage}%)`);
+
+    // Check if all mappings are completed
+    if (approvedRows === totalRows) {
+        updateProgressText('🎉 All mappings completed and approved! Ready for export.');
+        showToast('All mappings have been approved! You can now export the results.', 'success');
+
+        // Enable export button or show completion message
+        const exportBtn = document.querySelector('.btn-export');
+        if (exportBtn) {
+            exportBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            exportBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+        }
+
+        // Auto-scroll to top for better UX
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 1000);
+    }
+}
+
+// Helper function to unlock/edit an approved mapping
+function unlockMapping(rowNum) {
+    const row = document.getElementById(`row${rowNum}`);
+    const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+    const hospitalInput = document.querySelector(`#hospitalSearch${rowNum} .custom-search-input`);
+    const approveBtn = document.querySelector(`#row${rowNum} .btn-approve`);
+    const editBtn = document.querySelector(`#row${rowNum} .btn-edit`);
+
+    if (row && row.dataset.approved === 'true') {
+        // Confirm unlock
+        if (confirm(`Are you sure you want to unlock and edit the mapping for row ${rowNum}?`)) {
+            // Reset row state
+            row.style.background = '';
+            row.style.borderColor = '';
+            row.style.borderWidth = '';
+            row.dataset.approved = 'false';
+
+            // Re-enable inputs
+            if (nphiesInput) {
+                nphiesInput.disabled = false;
+                nphiesInput.style.background = '';
+                nphiesInput.style.cursor = '';
+            }
+
+            if (hospitalInput) {
+                hospitalInput.disabled = false;
+                hospitalInput.style.background = '';
+                hospitalInput.style.cursor = '';
+            }
+
+            // Reset approve button
+            if (approveBtn) {
+                approveBtn.disabled = false;
+                approveBtn.style.background = '';
+                approveBtn.style.boxShadow = '';
+                approveBtn.innerHTML = `
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                    Approve
+                `;
+            }
+
+            // Reset edit button
+            if (editBtn) {
+                editBtn.disabled = false;
+                editBtn.style.background = '';
+                editBtn.style.cursor = '';
+                editBtn.innerHTML = `
+                    <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                    Edit
+                `;
+            }
+
+            // Reinitialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } editMapping
+
+            showToast(`Row ${rowNum} unlocked for editing`, 'info');
+            updateGlobalProgress();
+        }
+    }
+}
+
 function editMapping(rowNum) {
     console.log(`Opening edit mode for row ${rowNum}`);
 
-    // Focus on NPHIES dropdown for editing
-    const nphiesSelect = $(`#nphiesSelect${rowNum}`);
-    const hospitalSelect = $(`#hospitalSelect${rowNum}`);
+    const row = document.getElementById(`row${rowNum}`);
 
-    if (nphiesSelect.length) {
-        nphiesSelect.select2('open');
-        showToast(`Edit mode: Modify NPHIES or Hospital code selection for row ${rowNum}`, 'info');
+    // Check if mapping is already approved/locked
+    if (row && row.dataset.approved === 'true') {
+        unlockMapping(rowNum);
+        return;
+    }
+
+    // Focus on NPHIES search input for editing
+    const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
+
+    if (nphiesInput) {
+        // Clear current selection to allow new search
+        nphiesInput.value = '';
+        nphiesInput.classList.remove('has-selection');
+        const hiddenInput = document.querySelector(`#nphiesSearch${rowNum} .selected-value`);
+        if (hiddenInput) hiddenInput.value = '';
+
+        // Focus and open search
+        nphiesInput.focus();
+
+        // Show a helpful tooltip
+        showToast(`Edit mode: Search for a different NPHIES code for row ${rowNum}`, 'info');
+
+        // Update button states
+        toggleApproveButton(rowNum);
+        updateMappingPreview(rowNum);
+    } else {
+        console.error(`NPHIES search input not found for row ${rowNum}`);
     }
 }
 
