@@ -276,7 +276,7 @@ namespace NphiesBridge.Infrastructure.Migrations
                     MappedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MappedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAiSuggested = table.Column<bool>(type: "bit", nullable: false),
-                    ConfidenceScore = table.Column<int>(type: "int", nullable: true),
+                    ConfidenceScore = table.Column<string>(type: "nvarchar(50)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)

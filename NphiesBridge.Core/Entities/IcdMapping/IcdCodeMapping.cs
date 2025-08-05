@@ -7,7 +7,7 @@
         public Guid MappedByUserId { get; set; }
         public DateTime MappedAt { get; set; } = DateTime.UtcNow;
         public bool IsAiSuggested { get; set; } = false;
-        public int? ConfidenceScore { get; set; } // For AI suggestions
+        public string ConfidenceScore { get; set; } // For AI suggestions
 
         // Navigation
         public HospitalIcdCode HospitalCode { get; set; } = null!;

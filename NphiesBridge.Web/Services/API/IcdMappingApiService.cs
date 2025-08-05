@@ -1,6 +1,7 @@
 ﻿using NphiesBridge.Shared.DTOs;
-using System.Text.Json;
+using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
 using System.Text;
+using System.Text.Json;
 
 namespace NphiesBridge.Web.Services.API
 {
@@ -102,33 +103,6 @@ namespace NphiesBridge.Web.Services.API
             }
         }
 
-        public async Task<ApiResponse<SaveMappingResponseDto>?> SaveMappingAsync(SaveMappingRequestDto request)
-        {
-            try
-            {
-                _logger.LogInformation("Saving mapping for hospital code ID: {HospitalCodeId}", request.HospitalCodeId);
-
-                var json = JsonSerializer.Serialize(request, _jsonOptions);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync("api/icdmapping/save-mapping", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ApiResponse<SaveMappingResponseDto>>(responseContent, _jsonOptions);
-                }
-
-                _logger.LogWarning("Failed to save mapping. Status: {StatusCode}", response.StatusCode);
-                return ApiResponse<SaveMappingResponseDto>.ErrorResult($"Failed to save mapping: {response.StatusCode}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving mapping for hospital code ID: {HospitalCodeId}", request.HospitalCodeId);
-                return ApiResponse<SaveMappingResponseDto>.ErrorResult("Failed to save mapping");
-            }
-        }
-
         public async Task<ApiResponse<MappingStatisticsDto>?> GetMappingStatisticsAsync(string sessionId)
         {
             try
@@ -205,6 +179,90 @@ namespace NphiesBridge.Web.Services.API
                 return null;
             }
         }
+        public async Task<ApiResponse<object>> SaveMappingAsync(SaveMappingRequest request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("/api/IcdMapping/save-mapping", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<ApiResponse<object>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return result ?? new ApiResponse<object> { Success = false, Message = "Invalid response format" };
+                }
+
+                _logger.LogError("API call failed with status: {StatusCode}, Content: {Content}", response.StatusCode, responseContent);
+                return new ApiResponse<object> { Success = false, Message = "Failed to save mapping" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling save mapping API");
+                return new ApiResponse<object> { Success = false, Message = "Network error occurred" };
+            }
+        }
+        public async Task<ApiResponse<object>> SaveBulkMappingsAsync(SaveBulkMappingsRequest request)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("/api/IcdMapping/save-bulk-mappings", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<ApiResponse<object>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return result ?? new ApiResponse<object> { Success = false, Message = "Invalid response format" };
+                }
+
+                _logger.LogError("API call failed with status: {StatusCode}, Content: {Content}", response.StatusCode, responseContent);
+                return new ApiResponse<object> { Success = false, Message = "Failed to save bulk mappings" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling save bulk mappings API");
+                return new ApiResponse<object> { Success = false, Message = "Network error occurred" };
+            }
+        }
+        public async Task<ApiResponse<List<MappingStatusResponse>>> CheckExistingMappingsAsync(Guid sessionId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/IcdMapping/check-mappings/{sessionId}");
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<ApiResponse<List<MappingStatusResponse>>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return result ?? new ApiResponse<List<MappingStatusResponse>> { Success = false, Message = "Invalid response format" };
+                }
+
+                _logger.LogError("API call failed with status: {StatusCode}, Content: {Content}", response.StatusCode, responseContent);
+                return new ApiResponse<List<MappingStatusResponse>> { Success = false, Message = "Failed to check existing mappings" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling check existing mappings API");
+                return new ApiResponse<List<MappingStatusResponse>> { Success = false, Message = "Network error occurred" };
+            }
+        }
     }
 
     // Extension method for HttpClient registration
@@ -222,5 +280,4 @@ namespace NphiesBridge.Web.Services.API
             return services;
         }
     }
-
 }

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Collections.Generic;
 using System.Drawing;
 using NphiesBridge.Infrastructure.Repositories;
+using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
 
 namespace NphiesBridge.API.Controllers
 {
@@ -59,119 +60,6 @@ namespace NphiesBridge.API.Controllers
             {
                 _logger.LogError(ex, "Error in GetAiSuggestion API endpoint");
                 return StatusCode(500, ApiResponse<AiSuggestionResponseDto>.ErrorResult("Internal server error"));
-            }
-        }
-
-        /// <summary>
-        /// Save approved mapping
-        /// </summary>
-        [HttpPost("save-mapping")]
-        public async Task<ActionResult<ApiResponse<SaveMappingResponseDto>>> SaveMapping([FromBody] SaveMappingRequestDto request)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ApiResponse<SaveMappingResponseDto>.ErrorResult("Invalid mapping data"));
-                }
-
-                _logger.LogInformation("Saving mapping for hospital code ID: {HospitalCodeId} to NPHIES code: {NphiesCode}",
-                    request.HospitalCodeId, request.NphiesCode);
-
-                // Get the mapping session
-                var session = await _context.MappingSessions
-                    .FirstOrDefaultAsync(s => s.SessionId == request.SessionId);
-
-                if (session == null)
-                {
-                    return BadRequest(ApiResponse<SaveMappingResponseDto>.ErrorResult("Invalid session"));
-                }
-
-                // Get the hospital code
-                var hospitalCode = await _context.HospitalIcdCodes
-                    .FirstOrDefaultAsync(h => h.Id == request.HospitalCodeId);
-
-                if (hospitalCode == null)
-                {
-                    return BadRequest(ApiResponse<SaveMappingResponseDto>.ErrorResult("Hospital code not found"));
-                }
-
-                // Get the NPHIES code to validate it exists
-                var nphiesCodeExists = await _context.NphiesIcdCodes
-                    .AnyAsync(n => n.Code == request.NphiesCode && n.IsActive);
-
-                if (!nphiesCodeExists)
-                {
-                    return BadRequest(ApiResponse<SaveMappingResponseDto>.ErrorResult("NPHIES code not found"));
-                }
-
-                // Get current user ID
-                var userId = GetCurrentUserId();
-
-                // Check if mapping already exists
-                var existingMapping = await _context.IcdCodeMappings
-                    .FirstOrDefaultAsync(m => m.HospitalCodeId == request.HospitalCodeId);
-
-                if (existingMapping != null)
-                {
-                    // Update existing mapping
-                    existingMapping.NphiesIcdCode = request.NphiesCode;
-                    existingMapping.MappedByUserId = userId;
-                    existingMapping.MappedAt = DateTime.UtcNow;
-                    existingMapping.UpdatedAt = DateTime.UtcNow;
-
-                    _context.IcdCodeMappings.Update(existingMapping);
-                }
-                else
-                {
-                    // Create new mapping
-                    var mapping = new IcdCodeMapping
-                    {
-                        Id = Guid.NewGuid(),
-                        HospitalCodeId = request.HospitalCodeId,
-                        NphiesIcdCode = request.NphiesCode,
-                        MappedByUserId = userId,
-                        MappedAt = DateTime.UtcNow,
-                        IsAiSuggested = false, // Will be determined by AI service
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    _context.IcdCodeMappings.Add(mapping);
-                    existingMapping = mapping;
-                }
-
-                // Update hospital code as mapped
-                hospitalCode.IsMapped = true;
-                hospitalCode.UpdatedAt = DateTime.UtcNow;
-                _context.HospitalIcdCodes.Update(hospitalCode);
-
-                // Update session statistics
-                await UpdateSessionStatistics(session.Id);
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Mapping saved successfully. ID: {MappingId}", existingMapping.Id);
-
-                var response = new SaveMappingResponseDto
-                {
-                    Success = true,
-                    Message = "Mapping saved successfully",
-                    MappingId = existingMapping.Id
-                };
-
-                return Ok(ApiResponse<SaveMappingResponseDto>.SuccessResult(response));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving mapping for hospital code ID: {HospitalCodeId}", request.HospitalCodeId);
-
-                var errorResponse = new SaveMappingResponseDto
-                {
-                    Success = false,
-                    Message = "Failed to save mapping. Please try again."
-                };
-
-                return StatusCode(500, ApiResponse<SaveMappingResponseDto>.ErrorResult("Internal server error"));
             }
         }
 
@@ -573,6 +461,236 @@ namespace NphiesBridge.API.Controllers
             {
                 _logger.LogError(ex, "Error retrieving mapping session: {SessionId}", sessionId);
                 return StatusCode(500, ApiResponse<IcdMappingPageDto>.ErrorResult("Failed to retrieve mapping session"));
+            }
+        }
+
+        [HttpPost("save-mapping")]
+        public async Task<IActionResult> SaveMapping([FromBody] SaveMappingRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Saving mapping for HospitalCodeId: {HospitalCodeId}", request.HospitalCodeId);
+
+                // Get current user ID
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return BadRequest(new { success = false, message = "Invalid user ID" });
+                }
+
+                // Validate hospital code exists
+                var hospitalCode = await _context.HospitalIcdCodes
+                    .FirstOrDefaultAsync(h => h.Id == request.HospitalCodeId);
+
+                if (hospitalCode == null)
+                {
+                    return NotFound(new { success = false, message = "Hospital code not found" });
+                }
+
+                // Check if mapping already exists
+                var existingMapping = await _context.IcdCodeMappings
+                    .FirstOrDefaultAsync(m => m.HospitalCodeId == request.HospitalCodeId && !m.IsDeleted);
+
+                if (existingMapping != null)
+                {
+                    // Update existing mapping
+                    existingMapping.NphiesIcdCode = request.NphiesIcdCode;
+                    existingMapping.MappedByUserId = userId;
+                    existingMapping.MappedAt = DateTime.UtcNow;
+                    existingMapping.IsAiSuggested = request.IsAiSuggested;
+                    existingMapping.ConfidenceScore = request.ConfidenceScore;
+                    existingMapping.UpdatedAt = DateTime.UtcNow;
+
+                    _context.IcdCodeMappings.Update(existingMapping);
+                    _logger.LogInformation("Updated existing mapping with ID: {MappingId}", existingMapping.Id);
+                }
+                else
+                {
+                    // Create new mapping
+                    var newMapping = new IcdCodeMapping
+                    {
+                        Id = Guid.NewGuid(),
+                        HospitalCodeId = request.HospitalCodeId,
+                        NphiesIcdCode = request.NphiesIcdCode,
+                        MappedByUserId = userId,
+                        MappedAt = DateTime.UtcNow,
+                        IsAiSuggested = request.IsAiSuggested,
+                        ConfidenceScore = request.ConfidenceScore,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        IsDeleted = false
+                    };
+
+                    await _context.IcdCodeMappings.AddAsync(newMapping);
+                    _logger.LogInformation("Created new mapping with ID: {MappingId}", newMapping.Id);
+                }
+
+                // Update hospital code mapping status
+                hospitalCode.IsMapped = true;
+                hospitalCode.UpdatedAt = DateTime.UtcNow;
+                _context.HospitalIcdCodes.Update(hospitalCode);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = existingMapping != null ? "Mapping updated successfully" : "Mapping saved successfully",
+                    data = new { hospitalCodeId = request.HospitalCodeId, isMapped = true }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving mapping for HospitalCodeId: {HospitalCodeId}", request.HospitalCodeId);
+                return StatusCode(500, new { success = false, message = "An error occurred while saving the mapping" });
+            }
+        }
+
+        [HttpPost("save-bulk-mappings")]
+        public async Task<IActionResult> SaveBulkMappings([FromBody] SaveBulkMappingsRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Saving bulk mappings for {Count} items", request.Mappings.Count);
+
+                // Get current user ID
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return BadRequest(new { success = false, message = "Invalid user ID" });
+                }
+
+                var savedCount = 0;
+                var updatedCount = 0;
+                var failedMappings = new List<string>();
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    foreach (var mappingRequest in request.Mappings)
+                    {
+                        try
+                        {
+                            // Validate hospital code exists
+                            var hospitalCode = await _context.HospitalIcdCodes
+                                .FirstOrDefaultAsync(h => h.Id == mappingRequest.HospitalCodeId);
+
+                            if (hospitalCode == null)
+                            {
+                                failedMappings.Add($"Hospital code {mappingRequest.HospitalCodeId} not found");
+                                continue;
+                            }
+
+                            // Check if mapping already exists
+                            var existingMapping = await _context.IcdCodeMappings
+                                .FirstOrDefaultAsync(m => m.HospitalCodeId == mappingRequest.HospitalCodeId && !m.IsDeleted);
+
+                            if (existingMapping != null)
+                            {
+                                // Update existing mapping
+                                existingMapping.NphiesIcdCode = mappingRequest.NphiesIcdCode;
+                                existingMapping.MappedByUserId = userId;
+                                existingMapping.MappedAt = DateTime.UtcNow;
+                                existingMapping.IsAiSuggested = mappingRequest.IsAiSuggested;
+                                existingMapping.ConfidenceScore = mappingRequest.ConfidenceScore;
+                                existingMapping.UpdatedAt = DateTime.UtcNow;
+
+                                _context.IcdCodeMappings.Update(existingMapping);
+                                updatedCount++;
+                            }
+                            else
+                            {
+                                // Create new mapping
+                                var newMapping = new IcdCodeMapping
+                                {
+                                    Id = Guid.NewGuid(),
+                                    HospitalCodeId = mappingRequest.HospitalCodeId,
+                                    NphiesIcdCode = mappingRequest.NphiesIcdCode,
+                                    MappedByUserId = userId,
+                                    MappedAt = DateTime.UtcNow,
+                                    IsAiSuggested = mappingRequest.IsAiSuggested,
+                                    ConfidenceScore = mappingRequest.ConfidenceScore,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow,
+                                    IsDeleted = false
+                                };
+
+                                await _context.IcdCodeMappings.AddAsync(newMapping);
+                                savedCount++;
+                            }
+
+                            // Update hospital code mapping status
+                            hospitalCode.IsMapped = true;
+                            hospitalCode.UpdatedAt = DateTime.UtcNow;
+                            _context.HospitalIcdCodes.Update(hospitalCode);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing mapping for HospitalCodeId: {HospitalCodeId}", mappingRequest.HospitalCodeId);
+                            failedMappings.Add($"Failed to process mapping for {mappingRequest.HospitalCodeId}");
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    var totalProcessed = savedCount + updatedCount;
+                    var message = $"Successfully processed {totalProcessed} mappings ({savedCount} new, {updatedCount} updated)";
+
+                    if (failedMappings.Any())
+                    {
+                        message += $". {failedMappings.Count} mappings failed.";
+                    }
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = message,
+                        data = new
+                        {
+                            totalProcessed = totalProcessed,
+                            savedCount = savedCount,
+                            updatedCount = updatedCount,
+                            failedCount = failedMappings.Count,
+                            failedMappings = failedMappings
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving bulk mappings");
+                return StatusCode(500, new { success = false, message = "An error occurred while saving bulk mappings" });
+            }
+        }
+
+        [HttpGet("check-mappings/{sessionId}")]
+        public async Task<IActionResult> CheckExistingMappings(Guid sessionId)
+        {
+            try
+            {
+                var hospitalCodes = await _context.HospitalIcdCodes
+                    .Where(h => h.MappingSessionId == sessionId)
+                    .Select(h => h.Id)
+                    .ToListAsync();
+
+                var existingMappings = await _context.IcdCodeMappings
+                    .Where(m => hospitalCodes.Contains(m.HospitalCodeId) && !m.IsDeleted)
+                    .Select(m => new { m.HospitalCodeId, m.NphiesIcdCode, m.ConfidenceScore })
+                    .ToListAsync();
+
+                return Ok(new { success = true, data = existingMappings });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking existing mappings for session: {SessionId}", sessionId);
+                return StatusCode(500, new { success = false, message = "An error occurred while checking existing mappings" });
             }
         }
     }

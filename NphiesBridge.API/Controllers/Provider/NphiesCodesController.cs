@@ -82,9 +82,7 @@ namespace NphiesBridge.API.Controllers.Provider
         }
 
         [HttpGet("search-code")]
-        public async Task<ActionResult<List<NphiesCodeDto>>> SearchNphiesCodes(
-    [FromQuery] string q,
-    [FromQuery] int limit = 50)
+        public async Task<ActionResult<List<NphiesCodeDto>>> SearchNphiesCodes([FromQuery] string q, [FromQuery] int limit = 50)
         {
             try
             {

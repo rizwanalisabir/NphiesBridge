@@ -359,8 +359,8 @@ namespace NphiesBridge.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ConfidenceScore")
-                        .HasColumnType("int");
+                    b.Property<string>("ConfidenceScore")
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");

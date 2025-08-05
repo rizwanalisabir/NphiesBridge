@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NphiesBridge.Shared.DTOs;
+using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
 using NphiesBridge.Shared.Helpers;
 using NphiesBridge.Web.Services;
 using NphiesBridge.Web.Services.API;
@@ -316,6 +317,69 @@ namespace NphiesBridge.Web.Controllers
                 _logger.LogError(ex, "Error exporting mappings for session: {SessionId}", sessionId);
                 TempData["Error"] = "Error exporting mappings.";
                 return RedirectToAction("MappingResults", new { sessionId });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveMapping([FromBody] SaveMappingRequest request)
+        {
+            try
+            {
+                var result = await _mappingApiService.SaveMappingAsync(request);
+
+                if (result.Success)
+                {
+                    return Json(new { success = true, message = result.Message, data = result.Data });
+                }
+
+                return Json(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving mapping in web controller");
+                return Json(new { success = false, message = "An error occurred while saving the mapping" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveBulkMappings([FromBody] SaveBulkMappingsRequest request)
+        {
+            try
+            {
+                var result = await _mappingApiService.SaveBulkMappingsAsync(request);
+
+                if (result.Success)
+                {
+                    return Json(new { success = true, message = result.Message, data = result.Data });
+                }
+
+                return Json(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving bulk mappings in web controller");
+                return Json(new { success = false, message = "An error occurred while saving bulk mappings" });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckExistingMappings(Guid sessionId)
+        {
+            try
+            {
+                var result = await _mappingApiService.CheckExistingMappingsAsync(sessionId);
+
+                if (result.Success)
+                {
+                    return Json(new { success = true, data = result.Data });
+                }
+
+                return Json(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking existing mappings in web controller");
+                return Json(new { success = false, message = "An error occurred while checking existing mappings" });
             }
         }
     }

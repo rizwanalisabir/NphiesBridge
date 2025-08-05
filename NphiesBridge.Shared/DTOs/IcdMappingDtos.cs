@@ -54,7 +54,7 @@ namespace NphiesBridge.Shared.DTOs
         public Guid HospitalCodeId { get; set; }
         public string NphiesIcdCode { get; set; } = string.Empty;
         public string NphiesDescription { get; set; } = string.Empty;
-        public int ConfidenceScore { get; set; } // 0-100
+        public string ConfidenceScore { get; set; } // 0-100
         public string MatchReason { get; set; } = string.Empty; // "Code match", "Description similarity", etc.
     }
 

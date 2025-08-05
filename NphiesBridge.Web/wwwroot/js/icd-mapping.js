@@ -11,13 +11,13 @@ let mappingSessionId = null;
 let hospitalCodes = [];
 let nphiesCodes = [];
 let apiUrls = {};
+let existingMappings = new Map();
 
 // ============================================
 // INITIALIZATION FUNCTIONS
 // ============================================
 
 // Initialize mapping process when DOM is loaded
-// Update the initializeMappingProcess function to show loading indicators
 function initializeMappingProcess() {
     console.log('Initializing ICD mapping process...');
 
@@ -34,6 +34,9 @@ function initializeMappingProcess() {
         // Load NPHIES codes first
         loadNphiesCodes();
 
+        // Check existing mappings
+        checkExistingMappings();
+
         // Show initial loading message for 44K codes
         updateProgressText('🚀 Initializing high-performance AI matching engine (44K+ codes)...');
 
@@ -49,6 +52,34 @@ function initializeMappingProcess() {
         showToast('Initialization failed. Please refresh the page.', 'error');
     }
 }
+
+// Check existing mappings from database
+async function checkExistingMappings() {
+    try {
+        const response = await fetch(`/IcdMapping/CheckExistingMappings?sessionId=${mappingSessionId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            result.data.forEach(mapping => {
+                existingMappings.set(mapping.hospitalCodeId, {
+                    nphiesIcdCode: mapping.nphiesIcdCode,
+                    confidenceScore: mapping.confidenceScore
+                });
+            });
+            console.log(`Loaded ${existingMappings.size} existing mappings`);
+        }
+    } catch (error) {
+        console.error('Error checking existing mappings:', error);
+    }
+}
+
 // Updated loadSessionData function with dynamic rendering
 async function loadSessionData() {
     try {
@@ -96,8 +127,7 @@ async function loadSessionData() {
     }
 }
 
-// New function to dynamically render mapping rows
-// Updated renderMappingRows function with corrected dropdown structure
+// Enhanced renderMappingRows function with save buttons and status badges
 function renderMappingRows() {
     const mappingRowsContainer = document.getElementById('mappingRows');
 
@@ -121,7 +151,7 @@ function renderMappingRows() {
                             <div class="text-muted small mt-1">Hospital Code: ${hospitalCode.hospitalCode}</div>
                         </div>
                     </div>
-                    <div class="row-status pending">
+                    <div class="row-status pending" id="status-${rowNumber}">
                         <div class="status-dot"></div>
                         <span class="status-text">Pending Analysis</span>
                     </div>
@@ -180,7 +210,7 @@ function renderMappingRows() {
                                 <div class="dropdown-section">
                                     <div class="dropdown-label">
                                         <i data-lucide="database" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
-                                        Select NPHIES ICD Code
+                                        Select OR Change NPHIES ICD Code
                                         <span class="search-performance-badge">⚡ Fast</span>
                                     </div>
                                     <div class="custom-search-container" id="nphiesSearch${rowNumber}">
@@ -195,16 +225,9 @@ function renderMappingRows() {
                                     </div>
                                 </div>
 
-                                <!-- Show Current Hospital Code (Read-only) -->
-                                <div class="current-hospital-code mt-3">
-                                    <div class="dropdown-label">
-                                        <i data-lucide="hospital" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
-                                        Your Hospital Code (Fixed)
+                                    <div style="display:none" id="hospitalSearch${rowNumber}">
+                                        <strong class="selected-value">${hospitalCode.hospitalCode}</strong> - ${hospitalCode.diagnosisName}
                                     </div>
-                                    <div class="hospital-code-display">
-                                        <strong>${hospitalCode.hospitalCode}</strong> - ${hospitalCode.diagnosisName}
-                                    </div>
-                                </div>
 
                                 <!-- Enhanced Mapping Preview -->
                                 <div class="mapping-preview mt-3" id="mappingPreview${rowNumber}" style="display: none;">
@@ -229,7 +252,7 @@ function renderMappingRows() {
 
                                 <!-- Action Buttons -->
                                 <div class="action-buttons mt-3">
-                                    <button class="btn-action btn-approve" onclick="approveMapping(${rowNumber})" disabled style="opacity: 0.6;">
+                                    <button id="approve-${rowNumber}" class="btn-action btn-approve" onclick="approveMapping(${rowNumber})" disabled style="opacity: 0.6;">
                                         <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                                         Approve Mapping
                                     </button>
@@ -656,11 +679,11 @@ function toggleApproveButton(rowNum) {
 function updateMappingPreview(rowNum) {
     const nphiesValue = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value;
     const previewDiv = document.getElementById(`mappingPreview${rowNum}`);
-    const selectedNphiesDiv = document.getElementById(`selectedNphiesCodeDisplay${rowNumber}`);
+    const selectedNphiesDiv = document.getElementById(`selectedNphiesCodeDisplay${rowNum}`);
 
     if (nphiesValue && previewDiv && selectedNphiesDiv) {
         // Get display text for selected NPHIES code
-        const nphiesText = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`)?.value || nphiesValue;
+        const nphiesText = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value || nphiesValue;
 
         selectedNphiesDiv.textContent = nphiesText;
         previewDiv.style.display = 'block';
@@ -1188,43 +1211,119 @@ function pauseProcessing() {
     }
 }
 
-// Approve mapping for a specific row
-async function approveMapping(rowNum) {
-    console.log(`Attempting to approve mapping for row ${rowNum}`);
+// Approve single mapping
+async function approveMapping(hospitalCodeId) {
+    const approveBtn = document.getElementById(`approve-${hospitalCodeId}`);
+    //const statusBadge = document.getElementById(`status-${hospitalCodeId}`);
 
-    // Only get NPHIES code now
-    const nphiesCode = document.querySelector(`#nphiesSearch${rowNum} .selected-value`)?.value;
-    const hospitalCodeId = hospitalCodes[rowNum - 1]?.id;
-    const hospitalCode = hospitalCodes[rowNum - 1]?.hospitalCode; // Fixed hospital code
+    if (!approveBtn) {
+        console.error('Approve button not found for hospital code:', hospitalCodeId);
+        return;
+    }
 
-    // Validation checks
-    if (!nphiesCode) {
-        showToast('Please select a NPHIES code before approving', 'warning');
-        const nphiesInput = document.querySelector(`#nphiesSearch${rowNum} .custom-search-input`);
-        if (nphiesInput) {
-            nphiesInput.style.borderColor = '#dc3545';
-            setTimeout(() => nphiesInput.style.borderColor = '', 3000);
+    // Show loader
+    showButtonLoader(approveBtn);
+
+    try {
+        // Get the selected suggestion
+        const selectedSuggestion = getFinalMapping(hospitalCodeId);
+
+        if (!selectedSuggestion) {
+            showToast('Please select a suggestion before approving', 'warning');
+            hideButtonLoader(approveBtn);
+            return;
         }
-        return;
+
+        const mappingRequest = {
+            HospitalIcdCode: selectedSuggestion.hospitalCode,
+            NphiesIcdCode: selectedSuggestion.nphiesCode,
+            IsAiSuggested: selectedSuggestion.confidence == 'manual' ? false : true,
+            ConfidenceScore: selectedSuggestion.confidence
+        };
+
+        const response = await fetch('/IcdMapping/SaveMapping', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(mappingRequest)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update UI to show saved status
+            updateMappingStatus(hospitalCodeId, true);
+            showToast(result.message || 'Mapping saved successfully!', 'success');
+
+            // Add to existing mappings
+            existingMappings.set(hospitalCodeId, {
+                nphiesIcdCode: selectedSuggestion.code,
+                confidenceScore: selectedSuggestion.confidence
+            });
+
+            // Update counters
+            updateCounters();
+        } else {
+            showToast(result.message || 'Failed to save mapping', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving mapping:', error);
+        showToast('Network error occurred while saving mapping', 'error');
+    } finally {
+        hideButtonLoader(approveBtn);
     }
-
-    if (!hospitalCodeId) {
-        showToast('Hospital code ID not found', 'error');
-        return;
-    }
-
-    // Rest of your existing approveMapping logic...
-    const requestBody = {
-        hospitalCodeId: hospitalCodeId,
-        nphiesCode: nphiesCode,
-        selectedHospitalCode: hospitalCode, // Use the fixed hospital code
-        sessionId: mappingSessionId,
-        isApproved: true,
-        rowNumber: rowNum
-    };
-
-    // ... rest of the function stays the same
 }
+
+// Show button loader
+function showButtonLoader(button) {
+    const btnText = button.querySelector('.btn-text');
+    const btnLoader = button.querySelector('.btn-loader');
+
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+    button.disabled = true;
+}
+
+// Hide button loader
+function hideButtonLoader(button) {
+    const btnText = button.querySelector('.btn-text');
+    const btnLoader = button.querySelector('.btn-loader');
+
+    if (btnText) btnText.style.display = 'inline-flex';
+    if (btnLoader) btnLoader.style.display = 'none';
+
+    button.disabled = false;
+}
+
+// Get selected suggestion for a hospital code
+function getFinalMapping(hospitalCodeId) {
+    const hospitalCodeEl = document.querySelector(`#hospitalSearch${hospitalCodeId} .selected-value`);
+    const nphiesCodeEl = document.querySelector(`#selectedNphiesCodeDisplay${hospitalCodeId}`);
+    const aiSuggestionCodeEl = document.querySelector(`#suggestion${hospitalCodeId} .fw-bold.text-dark`);
+    const confidenceEl = document.querySelector(`#suggestion${hospitalCodeId} .confidence-badge`);
+
+    if (!hospitalCodeEl || !nphiesCodeEl || !aiSuggestionCodeEl) return null;
+
+    const hospitalCode = hospitalCodeEl.textContent.trim();
+    const nphiesCode = nphiesCodeEl.textContent.trim();
+    const suggestedCode = aiSuggestionCodeEl.textContent.trim();
+
+    let confidence = "manual";
+    if (nphiesCode === suggestedCode && confidenceEl) {
+        const match = confidenceEl.textContent.match(/(\d+)%/);
+        confidence = match ? `${match[1]}%` : "manual";
+    }
+
+    return {
+        hospitalCode,
+        nphiesCode,
+        confidence
+    };
+}
+
 // Helper function to update global progress
 function updateGlobalProgress() {
     const approvedRows = document.querySelectorAll('.mapping-row[data-approved="true"]').length;
@@ -1352,47 +1451,158 @@ function editMapping(rowNum) {
 
 // Approve all high-confidence mappings
 async function approveAll() {
-    console.log('Starting bulk approval process...');
+    const highConfidenceMappings = getHighConfidenceMappings();
 
-    let approvedCount = 0;
-    let skippedCount = 0;
+    if (highConfidenceMappings.length === 0) {
+        showToast('No high-confidence mappings found to approve', 'warning');
+        return;
+    }
 
-    // Show progress
-    updateProgressText('Bulk approving mappings...');
+    // Show confirmation dialog
+    if (!confirm(`Are you sure you want to approve ${highConfidenceMappings.length} high-confidence mappings?`)) {
+        return;
+    }
 
-    for (let i = 1; i <= completedRows; i++) {
-        const approveBtn = document.querySelector(`#row${i} .btn-approve`);
-        const nphiesCode = $(`#nphiesSelect${i}`).val();
-        const row = document.getElementById(`row${i}`);
+    // Show global loader
+    showGlobalLoader(`Saving ${highConfidenceMappings.length} mappings...`);
 
-        // Only approve if button is not disabled, a code is selected, and not already approved
-        if (approveBtn && !approveBtn.disabled && nphiesCode && !row?.dataset.approved) {
-            try {
-                await approveMapping(i);
-                approvedCount++;
-                console.log(`Approved row ${i}`);
+    try {
+        const bulkRequest = {
+            mappings: highConfidenceMappings
+        };
 
-                // Add small delay between approvals to prevent server overload
-                await new Promise(resolve => setTimeout(resolve, 300));
-            } catch (error) {
-                console.error(`Failed to approve row ${i}:`, error);
-                skippedCount++;
-            }
+        const response = await fetch('/IcdMapping/SaveBulkMappings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(bulkRequest)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update UI for all saved mappings
+            highConfidenceMappings.forEach(mapping => {
+                updateMappingStatus(mapping.hospitalCodeId, true);
+                existingMappings.set(mapping.hospitalCodeId, {
+                    nphiesIcdCode: mapping.nphiesIcdCode,
+                    confidenceScore: mapping.confidenceScore
+                });
+            });
+
+            showToast(result.message || `Successfully saved ${highConfidenceMappings.length} mappings!`, 'success');
+            updateCounters();
         } else {
-            skippedCount++;
-            console.log(`Skipped row ${i} - no selection or already approved`);
+            showToast(result.message || 'Failed to save bulk mappings', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving bulk mappings:', error);
+        showToast('Network error occurred while saving bulk mappings', 'error');
+    } finally {
+        hideGlobalLoader();
+    }
+}
+// Hide global loader
+function hideGlobalLoader() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+}
+
+// Show global loader
+function showGlobalLoader(message) {
+    const loader = document.getElementById('globalLoader') || createGlobalLoader();
+    const loaderText = loader.querySelector('.loader-text');
+
+    if (loaderText) {
+        loaderText.textContent = message;
+    }
+
+    loader.style.display = 'flex';
+}
+
+// Create global loader element
+function createGlobalLoader() {
+    const loader = document.createElement('div');
+    loader.id = 'globalLoader';
+    loader.className = 'global-loader';
+    loader.innerHTML = `
+        <div class="loader-content">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="loader-text mt-3">Processing...</div>
+        </div>
+    `;
+
+    document.body.appendChild(loader);
+    return loader;
+}
+
+// Update mapping status UI
+function updateMappingStatus(hospitalCodeId, isMapped) {
+    const statusRow = document.getElementById(`status-${hospitalCodeId}`);
+    const approveBtn = document.getElementById(`approve-${hospitalCodeId}`);
+
+    if (statusRow) {
+        const dot = statusRow.querySelector('.status-dot');
+        const text = statusRow.querySelector('.status-text');
+
+        if (isMapped) {
+            // Replace dot with check icon
+            if (dot) {
+                dot.outerHTML = '<i class="fas fa-check-circle text-success me-1"></i>';
+            }
+            // Update text
+            text.textContent = 'Saved';
+        } else {
+            // Optional fallback for unmapping
+            if (!statusRow.querySelector('.status-dot')) {
+                const icon = statusRow.querySelector('i.fas.fa-check-circle');
+                if (icon) {
+                    icon.outerHTML = '<div class="status-dot processing"></div>';
+                }
+            }
+            text.textContent = 'Pending';
         }
     }
 
-    const message = skippedCount > 0
-        ? `${approvedCount} mappings approved, ${skippedCount} skipped`
-        : `All ${approvedCount} mappings approved successfully!`;
-
-    showToast(message, 'success');
-    updateProgressText('Bulk approval completed.');
-
-    console.log(`Bulk approval completed: ${approvedCount} approved, ${skippedCount} skipped`);
+    if (approveBtn) {
+        approveBtn.disabled = true;
+        approveBtn.style.display = 'none';
+    }
 }
+
+
+
+
+// Get high-confidence mappings that are ready to be saved
+function getHighConfidenceMappings() {
+    const mappings = [];
+    const threshold = 80; // High confidence threshold
+
+    hospitalCodes.forEach(hospitalCode => {
+        // Skip if already mapped
+        if (existingMappings.has(hospitalCode.id)) {
+            return;
+        }
+
+        const selectedSuggestion = getSelectedSuggestion(hospitalCode.id);
+
+        if (selectedSuggestion && selectedSuggestion.confidence >= threshold) {
+            mappings.push({
+                hospitalCodeId: hospitalCode.id,
+                nphiesIcdCode: selectedSuggestion.code,
+                isAiSuggested: true,
+                confidenceScore: selectedSuggestion.confidence
+            });
+        }
+    });
+
+    return mappings;
+}
+
 
 // Export mapping results
 async function exportResults() {
