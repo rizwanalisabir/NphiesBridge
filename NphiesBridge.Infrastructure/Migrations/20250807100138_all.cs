@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class all : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -271,12 +271,13 @@ namespace NphiesBridge.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HospitalCodeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     NphiesIcdCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MappedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MappedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAiSuggested = table.Column<bool>(type: "bit", nullable: false),
-                    ConfidenceScore = table.Column<string>(type: "nvarchar(50)", nullable: true),
+                    ConfidenceScore = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HospitalCodeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -303,8 +304,8 @@ namespace NphiesBridge.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Description", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { new Guid("4b7a348a-ef7c-474b-8a20-576794509562"), null, "System Administrator", "Admin", "ADMIN" },
-                    { new Guid("ffa5b118-52e7-4f72-8629-13e5c889e0af"), null, "Healthcare Provider User", "Provider", "PROVIDER" }
+                    { new Guid("3998c9b7-aaba-475a-9737-b1f1fb6d4d36"), null, "System Administrator", "Admin", "ADMIN" },
+                    { new Guid("74ea35df-eac7-43f1-ac4b-c4045f0a4331"), null, "Healthcare Provider User", "Provider", "PROVIDER" }
                 });
 
             migrationBuilder.CreateIndex(

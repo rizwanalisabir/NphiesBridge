@@ -2459,3 +2459,32 @@ body {
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
+
+i {
+    font-style: normal !important;
+}
+/* Blue dot for Edit Mode */
+.edit-mode-dot {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    background: #007bff;
+    border-radius: 50%;
+    margin-right: 0.4em;
+    vertical-align: middle;
+}
+
+/* Edit Mode badge */
+.edit-mode-badge {
+    background: #e7f1ff !important;
+    color: #007bff !important;
+    border: 1px solid #c6e0ff !important;
+    font-weight: 600;
+}
+
+/* Dashed light blue border for row */
+.edit-mode-row {
+    border: 2px dashed #007bff !important;
+    background: #f4faff;
+    transition: border 0.2s;
+}

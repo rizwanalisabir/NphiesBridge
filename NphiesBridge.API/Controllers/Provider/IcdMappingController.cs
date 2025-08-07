@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NphiesBridge.Core.Entities.IcdMapping;
 using NphiesBridge.Core.Interfaces;
 using NphiesBridge.Infrastructure.Data;
+using NphiesBridge.Infrastructure.Repositories;
 using NphiesBridge.Shared.DTOs;
-using NphiesBridge.Core.Entities.IcdMapping;
-using ClosedXML.Excel;
-using System.Security.Claims;
+using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
 using System.Collections.Generic;
 using System.Drawing;
-using NphiesBridge.Infrastructure.Repositories;
-using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
+using System.Security.Claims;
 
 namespace NphiesBridge.API.Controllers
 {
@@ -125,7 +126,7 @@ namespace NphiesBridge.API.Controllers
 
                 // Get mappings with related data
                 var mappingsQuery = from mapping in _context.IcdCodeMappings
-                                    join hospitalCode in _context.HospitalIcdCodes on mapping.HospitalCodeId equals hospitalCode.Id
+                                    join hospitalCode in _context.HospitalIcdCodes on mapping.HealthProviderId equals hospitalCode.Id
                                     join user in _context.Users on mapping.MappedByUserId equals user.Id
                                     where hospitalCode.MappingSessionId == session.Id
                                     select new
@@ -469,18 +470,18 @@ namespace NphiesBridge.API.Controllers
         {
             try
             {
-                _logger.LogInformation("Saving mapping for HospitalCodeId: {HospitalCodeId}", request.HospitalCodeId);
+                _logger.LogInformation("Saving mapping for Health Provider: {HealthProviderId}", request.HealthProviderId);
 
                 // Get current user ID
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return BadRequest(new { success = false, message = "Invalid user ID" });
-                }
+                //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (!Guid.TryParse(userIdClaim, out var userId))
+                //{
+                //    return BadRequest(new { success = false, message = "Invalid user ID" });
+                //}
 
                 // Validate hospital code exists
                 var hospitalCode = await _context.HospitalIcdCodes
-                    .FirstOrDefaultAsync(h => h.Id == request.HospitalCodeId);
+                    .FirstOrDefaultAsync(h => h.HospitalCode == request.HospitalIcdCode);
 
                 if (hospitalCode == null)
                 {
@@ -489,17 +490,18 @@ namespace NphiesBridge.API.Controllers
 
                 // Check if mapping already exists
                 var existingMapping = await _context.IcdCodeMappings
-                    .FirstOrDefaultAsync(m => m.HospitalCodeId == request.HospitalCodeId && !m.IsDeleted);
+                    .FirstOrDefaultAsync(m => m.HealthProviderIcdCode == request.HospitalIcdCode && !m.IsDeleted);
 
                 if (existingMapping != null)
                 {
                     // Update existing mapping
                     existingMapping.NphiesIcdCode = request.NphiesIcdCode;
-                    existingMapping.MappedByUserId = userId;
+                    existingMapping.MappedByUserId = request.MappedBy;
                     existingMapping.MappedAt = DateTime.UtcNow;
                     existingMapping.IsAiSuggested = request.IsAiSuggested;
                     existingMapping.ConfidenceScore = request.ConfidenceScore;
                     existingMapping.UpdatedAt = DateTime.UtcNow;
+                    existingMapping.HealthProviderIcdCode = request.HospitalIcdCode;
 
                     _context.IcdCodeMappings.Update(existingMapping);
                     _logger.LogInformation("Updated existing mapping with ID: {MappingId}", existingMapping.Id);
@@ -510,15 +512,16 @@ namespace NphiesBridge.API.Controllers
                     var newMapping = new IcdCodeMapping
                     {
                         Id = Guid.NewGuid(),
-                        HospitalCodeId = request.HospitalCodeId,
+                        HealthProviderId = request.HealthProviderId,
                         NphiesIcdCode = request.NphiesIcdCode,
-                        MappedByUserId = userId,
+                        MappedByUserId = request.MappedBy,
                         MappedAt = DateTime.UtcNow,
                         IsAiSuggested = request.IsAiSuggested,
                         ConfidenceScore = request.ConfidenceScore,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        IsDeleted = false
+                        IsDeleted = false,
+                        HealthProviderIcdCode = request.HospitalIcdCode
                     };
 
                     await _context.IcdCodeMappings.AddAsync(newMapping);
@@ -536,12 +539,12 @@ namespace NphiesBridge.API.Controllers
                 {
                     success = true,
                     message = existingMapping != null ? "Mapping updated successfully" : "Mapping saved successfully",
-                    data = new { hospitalCodeId = request.HospitalCodeId, isMapped = true }
+                    data = new { hospitalCodeId = request.HealthProviderId, isMapped = true }
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving mapping for HospitalCodeId: {HospitalCodeId}", request.HospitalCodeId);
+                _logger.LogError(ex, "Error saving mapping for Health Provider: {HealthProviderId}", request.HealthProviderId);
                 return StatusCode(500, new { success = false, message = "An error occurred while saving the mapping" });
             }
         }
@@ -574,17 +577,17 @@ namespace NphiesBridge.API.Controllers
                         {
                             // Validate hospital code exists
                             var hospitalCode = await _context.HospitalIcdCodes
-                                .FirstOrDefaultAsync(h => h.Id == mappingRequest.HospitalCodeId);
+                                .FirstOrDefaultAsync(h => h.Id == mappingRequest.HealthProviderId);
 
                             if (hospitalCode == null)
                             {
-                                failedMappings.Add($"Hospital code {mappingRequest.HospitalCodeId} not found");
+                                failedMappings.Add($"Hospital code {mappingRequest.HealthProviderId} not found");
                                 continue;
                             }
 
                             // Check if mapping already exists
                             var existingMapping = await _context.IcdCodeMappings
-                                .FirstOrDefaultAsync(m => m.HospitalCodeId == mappingRequest.HospitalCodeId && !m.IsDeleted);
+                                .FirstOrDefaultAsync(m => m.HealthProviderId == mappingRequest.HealthProviderId && !m.IsDeleted);
 
                             if (existingMapping != null)
                             {
@@ -605,7 +608,7 @@ namespace NphiesBridge.API.Controllers
                                 var newMapping = new IcdCodeMapping
                                 {
                                     Id = Guid.NewGuid(),
-                                    HospitalCodeId = mappingRequest.HospitalCodeId,
+                                    HealthProviderId = mappingRequest.HealthProviderId,
                                     NphiesIcdCode = mappingRequest.NphiesIcdCode,
                                     MappedByUserId = userId,
                                     MappedAt = DateTime.UtcNow,
@@ -627,8 +630,8 @@ namespace NphiesBridge.API.Controllers
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error processing mapping for HospitalCodeId: {HospitalCodeId}", mappingRequest.HospitalCodeId);
-                            failedMappings.Add($"Failed to process mapping for {mappingRequest.HospitalCodeId}");
+                            _logger.LogError(ex, "Error processing mapping for HealthProviderId: {HealthProviderId}", mappingRequest.HealthProviderId);
+                            failedMappings.Add($"Failed to process mapping for {mappingRequest.HealthProviderId}");
                         }
                     }
 
@@ -681,8 +684,8 @@ namespace NphiesBridge.API.Controllers
                     .ToListAsync();
 
                 var existingMappings = await _context.IcdCodeMappings
-                    .Where(m => hospitalCodes.Contains(m.HospitalCodeId) && !m.IsDeleted)
-                    .Select(m => new { m.HospitalCodeId, m.NphiesIcdCode, m.ConfidenceScore })
+                    .Where(m => hospitalCodes.Contains(m.HealthProviderId) && !m.IsDeleted)
+                    .Select(m => new { m.HealthProviderId, m.NphiesIcdCode, m.ConfidenceScore })
                     .ToListAsync();
 
                 return Ok(new { success = true, data = existingMappings });

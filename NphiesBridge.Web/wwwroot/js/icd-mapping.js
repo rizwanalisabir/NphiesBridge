@@ -253,12 +253,12 @@ function renderMappingRows() {
                                 <!-- Action Buttons -->
                                 <div class="action-buttons mt-3">
                                     <button id="approve-${rowNumber}" class="btn-action btn-approve" onclick="approveMapping(${rowNumber})" disabled style="opacity: 0.6;">
-                                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                                        <i data-lucide="file-check-2" style="width: 16px; height: 16px;"></i>
                                         Approve Mapping
                                     </button>
                                     <button class="btn-action btn-edit" onclick="editMapping(${rowNumber})">
-                                        <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
-                                        Change Selection
+                                        <i data-lucide="replace" style="width: 16px; height: 16px;"></i>
+                                        Change Mapping
                                     </button>
                                 </div>
                             </div>
@@ -1265,6 +1265,26 @@ async function approveMapping(hospitalCodeId) {
 
             // Update counters
             updateCounters();
+
+            // After mapping saved successfully:
+            updateMappingStatus(hospitalCodeId, true);
+
+            // Remove edit mode border and set original solid border
+            const row = document.getElementById(`row${hospitalCodeId}`);
+            if (row) {
+                row.classList.remove('edit-mode-row');
+                // Optionally, restore the original border class if you use one (e.g.):
+                // row.classList.add('original-row-border');
+            }
+
+            // Set badge to "Saved" with original styling
+            const statusBadge = document.getElementById(`status-${hospitalCodeId}`);
+            if (statusBadge) {
+                statusBadge.innerHTML = `<div class="status-dot"></div>
+                        <span class="status-text">Mapping Saved</span>`;
+                statusBadge.classList.remove('edit-mode-badge');
+                statusBadge.classList.add('saved-badge');
+            }
         } else {
             showToast(result.message || 'Failed to save mapping', 'error');
         }
@@ -1406,7 +1426,7 @@ function unlockMapping(rowNum) {
             // Reinitialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
-            } editMapping
+            }
 
             showToast(`Row ${rowNum} unlocked for editing`, 'info');
             updateGlobalProgress();
@@ -1446,6 +1466,27 @@ function editMapping(rowNum) {
         updateMappingPreview(rowNum);
     } else {
         console.error(`NPHIES search input not found for row ${rowNum}`);
+    }
+
+    // 1. Show and enable Approve button
+    const approveBtn = document.getElementById(`approve-${rowNum}`);
+    if (approveBtn) {
+        approveBtn.style.display = '';
+        approveBtn.disabled = false;
+    }
+
+    // 2. Change status badge to "Edit Mode" with blue dot
+    const statusBadge = document.getElementById(`status-${rowNum}`);
+    if (statusBadge) {
+        statusBadge.innerHTML = `<div class="status-dot edit-mode-dot"></div>
+                        <span class="status-text">Edit Mode</span>`;
+        statusBadge.classList.add('edit-mode-badge');
+        statusBadge.classList.remove('bg-success', 'bg-secondary'); // Remove old color classes if any
+    }
+
+    // 3. Add dashed light blue border
+    if (row) {
+        row.classList.add('edit-mode-row');
     }
 }
 

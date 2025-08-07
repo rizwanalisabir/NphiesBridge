@@ -12,8 +12,8 @@ using NphiesBridge.Infrastructure.Data;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250720151159_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250807113356_newColumn")]
+    partial class newColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -161,14 +161,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4b7a348a-ef7c-474b-8a20-576794509562"),
+                            Id = new Guid("9c4caa44-52bf-4a52-afab-9a200369ce67"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("ffa5b118-52e7-4f72-8629-13e5c889e0af"),
+                            Id = new Guid("cec2823a-ab32-4998-9ab6-b782b48b7d40"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"
@@ -360,10 +360,18 @@ namespace NphiesBridge.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ConfidenceScore")
-                        .HasColumnType("nvarchar(50)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("HealthProviderIcdCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HealthProviderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("HospitalCodeId")
                         .HasColumnType("uniqueidentifier");

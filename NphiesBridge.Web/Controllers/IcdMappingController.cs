@@ -2,28 +2,33 @@
 using NphiesBridge.Shared.DTOs;
 using NphiesBridge.Shared.DTOs.NphiesBridge.Shared.DTOs;
 using NphiesBridge.Shared.Helpers;
+using NphiesBridge.Web.Filters;
 using NphiesBridge.Web.Services;
 using NphiesBridge.Web.Services.API;
 
 namespace NphiesBridge.Web.Controllers
 {
+    [ProviderAuthorize]
     public class IcdMappingController : Controller
     {
         private readonly ExcelTemplateService _excelService;
         private readonly IcdMappingApiService _mappingApiService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<IcdMappingController> _logger;
+        private readonly AuthService _authService;
 
         public IcdMappingController(
             ExcelTemplateService excelService,
             IcdMappingApiService mappingApiService,
             IConfiguration configuration,
-            ILogger<IcdMappingController> logger)
+            ILogger<IcdMappingController> logger,
+            AuthService authService)
         {
             _excelService = excelService;
             _mappingApiService = mappingApiService;
             _configuration = configuration;
             _logger = logger;
+            _authService = authService;
         }
 
         public IActionResult Index()
@@ -325,6 +330,8 @@ namespace NphiesBridge.Web.Controllers
         {
             try
             {
+                request.HealthProviderId = LoggedInUserHelper.GetCurrentHealthProviderId(HttpContext);
+                request.MappedBy = _authService.GetCurrentUser().Id;
                 var result = await _mappingApiService.SaveMappingAsync(request);
 
                 if (result.Success)

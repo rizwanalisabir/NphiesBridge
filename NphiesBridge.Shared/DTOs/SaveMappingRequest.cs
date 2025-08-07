@@ -12,7 +12,7 @@ namespace NphiesBridge.Shared.DTOs
     {
         public class SaveMappingRequest
         {
-            public Guid HospitalCodeId { get; set; }
+            public Guid HealthProviderId { get; set; }
 
             [Required]
             [StringLength(20)]
@@ -24,8 +24,8 @@ namespace NphiesBridge.Shared.DTOs
 
             public bool IsAiSuggested { get; set; }
 
-            [Range(0, 100)]
             public string ConfidenceScore { get; set; }
+            public Guid MappedBy { get; set; }
         }
 
         public class SaveBulkMappingsRequest
