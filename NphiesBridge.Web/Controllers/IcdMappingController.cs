@@ -132,11 +132,10 @@ namespace NphiesBridge.Web.Controllers
         {
             try
             {
-                var sessionId = Guid.NewGuid().ToString();
 
                 var requestDto = new CreateSessionRequestDto
                 {
-                    SessionId = sessionId,
+                    SessionId = Guid.NewGuid(),
                     HealthProviderId = LoggedInUserHelper.GetCurrentHealthProviderId(HttpContext),
                     FileName = fileName,
                     HospitalCodes = validRows.Select(row => new UploadedHospitalCodeDto
@@ -291,11 +290,11 @@ namespace NphiesBridge.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ExportMappings(string sessionId)
+        public async Task<IActionResult> ExportMappings(Guid sessionId)
         {
             try
             {
-                if (string.IsNullOrEmpty(sessionId))
+                if (sessionId == Guid.Empty)
                 {
                     return BadRequest("Session ID is required");
                 }
@@ -353,6 +352,10 @@ namespace NphiesBridge.Web.Controllers
         {
             try
             {
+                Guid hpId = LoggedInUserHelper.GetCurrentHealthProviderId(HttpContext);
+                Guid uId = LoggedInUserHelper.GetCurrentUserId(HttpContext);
+                request.Mappings.ForEach(x => x.HealthProviderId = hpId);
+                request.Mappings.ForEach(x => x.MappedBy = uId);
                 var result = await _mappingApiService.SaveBulkMappingsAsync(request);
 
                 if (result.Success)

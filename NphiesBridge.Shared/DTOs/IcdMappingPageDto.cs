@@ -2,7 +2,7 @@
 {
     public class IcdMappingPageDto
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public int TotalRows { get; set; }
         public List<HospitalCodeDto> HospitalCodes { get; set; } = new List<HospitalCodeDto>();
     }

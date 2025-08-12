@@ -31,5 +31,29 @@ namespace NphiesBridge.Shared.Helpers
             // Default fallback
             return Guid.Parse("00000000-0000-0000-0000-000000000001");
         }
+        public static Guid GetCurrentUserId(HttpContext httpContext)
+        {
+            var userSession = httpContext.Session.GetString("ProviderCurrentUser");
+
+            if (!string.IsNullOrEmpty(userSession))
+            {
+                var jObj = JObject.Parse(userSession);
+                var idString = jObj["Id"]?.ToString();
+
+                if (Guid.TryParse(idString, out Guid sessionProviderId))
+                {
+                    return sessionProviderId;
+                }
+            }
+
+            var userIdClaim = httpContext.User.FindFirst("Id")?.Value;
+            if (Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return userId;
+            }
+
+            // Default fallback
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
+        }
     }
 }

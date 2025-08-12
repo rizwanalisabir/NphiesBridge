@@ -68,7 +68,7 @@ namespace NphiesBridge.API.Controllers
         /// Get mapping statistics for a session
         /// </summary>
         [HttpGet("statistics/{sessionId}")]
-        public async Task<ActionResult<ApiResponse<MappingStatisticsDto>>> GetMappingStatistics(string sessionId)
+        public async Task<ActionResult<ApiResponse<MappingStatisticsDto>>> GetMappingStatistics(Guid sessionId)
         {
             try
             {
@@ -125,23 +125,26 @@ namespace NphiesBridge.API.Controllers
                 }
 
                 // Get mappings with related data
-                var mappingsQuery = from mapping in _context.IcdCodeMappings
-                                    join hospitalCode in _context.HospitalIcdCodes on mapping.HealthProviderId equals hospitalCode.Id
-                                    join user in _context.Users on mapping.MappedByUserId equals user.Id
-                                    where hospitalCode.MappingSessionId == session.Id
+                var mappingsQuery = from m in _context.IcdCodeMappings
+                                    join u in _context.Users
+                                        on m.MappedByUserId equals u.Id
+                                    join ms in _context.MappingSessions
+                                        on m.MappingSessionID equals ms.SessionId
+                                    join hc in _context.HospitalIcdCodes
+                                        on m.HealthProviderIcdCode equals hc.HospitalCode
+                                    where ms.SessionId == session.SessionId
                                     select new
                                     {
-                                        HospitalCode = hospitalCode.HospitalCode,
-                                        DiagnosisName = hospitalCode.DiagnosisName,
-                                        DiagnosisDescription = hospitalCode.DiagnosisDescription,
-                                        SuggestedIcd10Am = hospitalCode.SuggestedIcd10Am,
-                                        NphiesIcdCode = mapping.NphiesIcdCode,
-                                        MappedBy = user.UserName,
-                                        MappedAt = mapping.MappedAt,
-                                        IsAiSuggested = mapping.IsAiSuggested,
-                                        ConfidenceScore = mapping.ConfidenceScore
+                                        HospitalCode = hc.HospitalCode,
+                                        DiagnosisName = hc.DiagnosisName,
+                                        DiagnosisDescription = hc.DiagnosisDescription,
+                                        SuggestedIcd10Am = hc.SuggestedIcd10Am,
+                                        NphiesIcdCode = m.NphiesIcdCode,
+                                        MappedBy = u.FirstName + " " + u.LastName,
+                                        MappedAt = m.MappedAt,
+                                        IsAiSuggested = m.IsAiSuggested,
+                                        ConfidenceScore = m.ConfidenceScore
                                     };
-
                 var mappings = await mappingsQuery
                     .OrderBy(m => m.HospitalCode)
                     .ToListAsync();
@@ -260,17 +263,19 @@ namespace NphiesBridge.API.Controllers
                 var worksheet = workbook.AddWorksheet("ICD Mappings");
 
                 // Simple headers
-                worksheet.Cell("A1").Value = "Hospital ICD Code";
-                worksheet.Cell("B1").Value = "Diagnosis Name";
-                worksheet.Cell("C1").Value = "NPHIES ICD Code";
+                worksheet.Cell("A1").Value = "ICD-10-AM Code";
+                worksheet.Cell("B1").Value = "Hospital ICD Code";
+                worksheet.Cell("C1").Value = "Diagnosis Name";
+                worksheet.Cell("D1").Value = "Diagnosis Description";
 
                 // Simple data
                 int row = 2;
                 foreach (var mapping in mappings)
                 {
-                    worksheet.Cell(row, 1).Value = mapping.HospitalCode?.ToString() ?? "";
-                    worksheet.Cell(row, 2).Value = mapping.DiagnosisName?.ToString() ?? "";
-                    worksheet.Cell(row, 3).Value = mapping.NphiesIcdCode?.ToString() ?? "";
+                    worksheet.Cell(row, 1).Value = mapping.NphiesIcdCode?.ToString() ?? "";
+                    worksheet.Cell(row, 2).Value = mapping.HospitalCode?.ToString() ?? "";
+                    worksheet.Cell(row, 3).Value = mapping.DiagnosisName?.ToString() ?? "";
+                    worksheet.Cell(row, 4).Value = mapping.DiagnosisDescription?.ToString() ?? "";
                     row++;
                 }
 
@@ -299,7 +304,7 @@ namespace NphiesBridge.API.Controllers
                     return BadRequest(ApiResponse<CreateSessionResponseDto>.ErrorResult("Request is null"));
                 }
 
-                if (string.IsNullOrEmpty(request.SessionId))
+                if (request.SessionId == Guid.Empty)
                 {
                     return BadRequest(ApiResponse<CreateSessionResponseDto>.ErrorResult("SessionId is required"));
                 }
@@ -413,11 +418,11 @@ namespace NphiesBridge.API.Controllers
         /// Get hospital codes for a mapping session (updated method)
         /// </summary>
         [HttpGet("session/{sessionId}")]
-        public async Task<ActionResult<ApiResponse<IcdMappingPageDto>>> GetMappingSession(string sessionId)
+        public async Task<ActionResult<ApiResponse<IcdMappingPageDto>>> GetMappingSession(Guid sessionId)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(sessionId))
+                if (sessionId == Guid.Empty)
                 {
                     return BadRequest(ApiResponse<IcdMappingPageDto>.ErrorResult("Session ID is required"));
                 }
@@ -557,11 +562,11 @@ namespace NphiesBridge.API.Controllers
                 _logger.LogInformation("Saving bulk mappings for {Count} items", request.Mappings.Count);
 
                 // Get current user ID
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return BadRequest(new { success = false, message = "Invalid user ID" });
-                }
+                //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (!Guid.TryParse(userIdClaim, out var userId))
+                //{
+                //    return BadRequest(new { success = false, message = "Invalid user ID" });
+                //}
 
                 var savedCount = 0;
                 var updatedCount = 0;
@@ -577,7 +582,7 @@ namespace NphiesBridge.API.Controllers
                         {
                             // Validate hospital code exists
                             var hospitalCode = await _context.HospitalIcdCodes
-                                .FirstOrDefaultAsync(h => h.Id == mappingRequest.HealthProviderId);
+                    .FirstOrDefaultAsync(h => h.HospitalCode == mappingRequest.HospitalIcdCode);
 
                             if (hospitalCode == null)
                             {
@@ -587,17 +592,19 @@ namespace NphiesBridge.API.Controllers
 
                             // Check if mapping already exists
                             var existingMapping = await _context.IcdCodeMappings
-                                .FirstOrDefaultAsync(m => m.HealthProviderId == mappingRequest.HealthProviderId && !m.IsDeleted);
+                    .FirstOrDefaultAsync(m => m.HealthProviderIcdCode == mappingRequest.HospitalIcdCode && !m.IsDeleted);
 
                             if (existingMapping != null)
                             {
                                 // Update existing mapping
                                 existingMapping.NphiesIcdCode = mappingRequest.NphiesIcdCode;
-                                existingMapping.MappedByUserId = userId;
+                                existingMapping.MappedByUserId = mappingRequest.MappedBy;
                                 existingMapping.MappedAt = DateTime.UtcNow;
                                 existingMapping.IsAiSuggested = mappingRequest.IsAiSuggested;
                                 existingMapping.ConfidenceScore = mappingRequest.ConfidenceScore;
                                 existingMapping.UpdatedAt = DateTime.UtcNow;
+                                existingMapping.HealthProviderIcdCode = mappingRequest.HospitalIcdCode;
+                                existingMapping.MappingSessionID = mappingRequest.MappingSessionId;
 
                                 _context.IcdCodeMappings.Update(existingMapping);
                                 updatedCount++;
@@ -610,13 +617,15 @@ namespace NphiesBridge.API.Controllers
                                     Id = Guid.NewGuid(),
                                     HealthProviderId = mappingRequest.HealthProviderId,
                                     NphiesIcdCode = mappingRequest.NphiesIcdCode,
-                                    MappedByUserId = userId,
+                                    MappedByUserId = mappingRequest.MappedBy,
                                     MappedAt = DateTime.UtcNow,
                                     IsAiSuggested = mappingRequest.IsAiSuggested,
                                     ConfidenceScore = mappingRequest.ConfidenceScore,
                                     CreatedAt = DateTime.UtcNow,
                                     UpdatedAt = DateTime.UtcNow,
-                                    IsDeleted = false
+                                    IsDeleted = false,
+                                    HealthProviderIcdCode = mappingRequest.HospitalIcdCode,
+                                    MappingSessionID = mappingRequest.MappingSessionId
                                 };
 
                                 await _context.IcdCodeMappings.AddAsync(newMapping);
@@ -701,7 +710,7 @@ namespace NphiesBridge.API.Controllers
     // Additional DTO for statistics
     public class MappingStatisticsDto
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public int TotalCodes { get; set; }
         public int MappedCodes { get; set; }
         public int UnmappedCodes { get; set; }

@@ -2,7 +2,7 @@
 {
     public class ExportMappingsRequestDto
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public bool IncludeUnapproved { get; set; } = true;
     }
 }

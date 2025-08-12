@@ -1178,7 +1178,6 @@ function updateProgressText(text) {
 function pauseProcessing() {
     isPaused = !isPaused;
     const pauseBtn = document.querySelector('.btn-pause');
-
     if (!pauseBtn) {
         console.error('Pause button not found');
         return;
@@ -1238,7 +1237,8 @@ async function approveMapping(hospitalCodeId) {
             HospitalIcdCode: selectedSuggestion.hospitalCode,
             NphiesIcdCode: selectedSuggestion.nphiesCode,
             IsAiSuggested: selectedSuggestion.confidence == 'manual' ? false : true,
-            ConfidenceScore: selectedSuggestion.confidence
+            ConfidenceScore: selectedSuggestion.confidence,
+            MappingSessionId: mappingSessionId
         };
 
         const response = await fetch('/IcdMapping/SaveMapping', {
@@ -1335,12 +1335,14 @@ function getFinalMapping(hospitalCodeId) {
     if (nphiesCode === suggestedCode && confidenceEl) {
         const match = confidenceEl.textContent.match(/(\d+)%/);
         confidence = match ? `${match[1]}%` : "manual";
+        confidenceINT = match ? match[1] : 100;
     }
 
     return {
         hospitalCode,
         nphiesCode,
-        confidence
+        confidence,
+        confidenceINT
     };
 }
 
@@ -1500,50 +1502,59 @@ async function approveAll() {
     }
 
     // Show confirmation dialog
-    if (!confirm(`Are you sure you want to approve ${highConfidenceMappings.length} high-confidence mappings?`)) {
-        return;
-    }
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to approve ${highConfidenceMappings.length} high-confidence mappings?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonClass: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, approve!',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            // Show global loader
+            showGlobalLoader(`Saving ${highConfidenceMappings.length} mappings...`);
 
-    // Show global loader
-    showGlobalLoader(`Saving ${highConfidenceMappings.length} mappings...`);
+            try {
+                const bulkRequest = {
+                    mappings: highConfidenceMappings
+                };
 
-    try {
-        const bulkRequest = {
-            mappings: highConfidenceMappings
-        };
-
-        const response = await fetch('/IcdMapping/SaveBulkMappings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(bulkRequest)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            // Update UI for all saved mappings
-            highConfidenceMappings.forEach(mapping => {
-                updateMappingStatus(mapping.hospitalCodeId, true);
-                existingMappings.set(mapping.hospitalCodeId, {
-                    nphiesIcdCode: mapping.nphiesIcdCode,
-                    confidenceScore: mapping.confidenceScore
+                const response = await fetch('/IcdMapping/SaveBulkMappings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(bulkRequest)
                 });
-            });
 
-            showToast(result.message || `Successfully saved ${highConfidenceMappings.length} mappings!`, 'success');
-            updateCounters();
-        } else {
-            showToast(result.message || 'Failed to save bulk mappings', 'error');
+                const result =await response.json();
+
+                if (result.success) {
+                    // Update UI for all saved mappings
+                    highConfidenceMappings.forEach(mapping => {
+                        updateMappingStatus(mapping.rowMapped, true);
+                        existingMappings.set(mapping.hospitalCodeId, {
+                            nphiesIcdCode: mapping.nphiesIcdCode,
+                            confidenceScore: mapping.confidenceScore
+                        });
+                    });
+
+                    showToast(result.message || `Successfully saved ${highConfidenceMappings.length} mappings!`, 'success');
+                    updateCounters();
+                } else {
+                    showToast(result.message || 'Failed to save bulk mappings', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving bulk mappings:', error);
+                showToast('Network error occurred while saving bulk mappings', 'error');
+            } finally {
+                hideGlobalLoader();
+            }
         }
-    } catch (error) {
-        console.error('Error saving bulk mappings:', error);
-        showToast('Network error occurred while saving bulk mappings', 'error');
-    } finally {
-        hideGlobalLoader();
-    }
+    });
 }
 // Hide global loader
 function hideGlobalLoader() {
@@ -1622,24 +1633,30 @@ function updateMappingStatus(hospitalCodeId, isMapped) {
 function getHighConfidenceMappings() {
     const mappings = [];
     const threshold = 80; // High confidence threshold
-
+    var i = 1;
     hospitalCodes.forEach(hospitalCode => {
         // Skip if already mapped
         if (existingMappings.has(hospitalCode.id)) {
             return;
         }
 
-        const selectedSuggestion = getSelectedSuggestion(hospitalCode.id);
+        const selectedSuggestion = getFinalMapping(i);
 
-        if (selectedSuggestion && selectedSuggestion.confidence >= threshold) {
+        if (selectedSuggestion && selectedSuggestion.confidenceINT >= threshold) {
             mappings.push({
                 hospitalCodeId: hospitalCode.id,
-                nphiesIcdCode: selectedSuggestion.code,
+                nphiesIcdCode: selectedSuggestion.nphiesCode,
+                hospitalIcdCode: selectedSuggestion.hospitalCode,
                 isAiSuggested: true,
-                confidenceScore: selectedSuggestion.confidence
+                confidenceScore: selectedSuggestion.confidence,
+                rowMapped: i,
+                mappingSessionId: mappingSessionId,
+
             });
         }
+        i++;
     });
+    i = 1;
 
     return mappings;
 }

@@ -8,7 +8,7 @@ namespace NphiesBridge.Shared.DTOs
 {
     public class CreateSessionRequestDto
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public Guid HealthProviderId { get; set; }
         public string FileName { get; set; } = string.Empty;
         public List<UploadedHospitalCodeDto> HospitalCodes { get; set; } = new List<UploadedHospitalCodeDto>();
@@ -16,7 +16,7 @@ namespace NphiesBridge.Shared.DTOs
 
     public class CreateSessionResponseDto
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public int TotalRows { get; set; }
         public string Message { get; set; } = string.Empty;
     }

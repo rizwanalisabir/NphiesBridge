@@ -26,6 +26,7 @@ namespace NphiesBridge.Shared.DTOs
 
             public string ConfidenceScore { get; set; }
             public Guid MappedBy { get; set; }
+            public Guid MappingSessionId { get; set; }
         }
 
         public class SaveBulkMappingsRequest

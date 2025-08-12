@@ -10,6 +10,7 @@ namespace NphiesBridge.Core.Entities.IcdMapping
         public Guid MappedByUserId { get; set; }
         public DateTime MappedAt { get; set; } = DateTime.UtcNow;
         public bool IsAiSuggested { get; set; } = false;
-        public string ConfidenceScore { get; set; } 
+        public string ConfidenceScore { get; set; }
+        public Guid MappingSessionID { get; set; }
     }
 }

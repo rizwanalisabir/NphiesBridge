@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NphiesBridge.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using NphiesBridge.Infrastructure.Data;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250812125454_UpdateColumnType")]
+    partial class UpdateColumnType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,14 +161,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("2d95de42-0f69-482c-a4a4-5178232f98bf"),
+                            Id = new Guid("27d51ca0-6662-4656-bed2-9530e084a6cb"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("4ff3b76b-382f-43fb-930e-ada165b8ba9e"),
+                            Id = new Guid("3ad9b6e9-18e2-4e27-aeb6-5fa6c9ebf9d2"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"
@@ -383,9 +386,6 @@ namespace NphiesBridge.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("MappedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MappingSessionID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NphiesIcdCode")

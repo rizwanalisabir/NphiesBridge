@@ -2,7 +2,7 @@
 {
     public class MappingSession : BaseEntity
     {
-        public string SessionId { get; set; } = string.Empty;
+        public Guid SessionId { get; set; }
         public Guid HealthProviderId { get; set; }
         public string OriginalFileName { get; set; } = string.Empty;
         public int TotalRows { get; set; }
