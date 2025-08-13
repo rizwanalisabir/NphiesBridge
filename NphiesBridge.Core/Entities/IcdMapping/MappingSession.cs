@@ -1,6 +1,6 @@
 ﻿namespace NphiesBridge.Core.Entities.IcdMapping
 {
-    public class ServiceMappingSession : BaseEntity
+    public class MappingSession : BaseEntity
     {
         public Guid SessionId { get; set; }
         public Guid HealthProviderId { get; set; }
@@ -12,6 +12,6 @@
 
         // Navigation Properties
         public HealthProvider HealthProvider { get; set; } = null!;
-        public ICollection<HospitalServiceCode> HospitalCodes { get; set; } = new List<HospitalServiceCode>();
+        public ICollection<HospitalIcdCode> HospitalCodes { get; set; } = new List<HospitalIcdCode>();
     }
 }

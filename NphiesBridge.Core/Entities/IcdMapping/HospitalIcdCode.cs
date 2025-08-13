@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NphiesBridge.Core.Entities.IcdMapping
 {
-    public class HospitalServiceCode : BaseEntity
+    public class HospitalIcdCode : BaseEntity
     {
         public Guid HealthProviderId { get; set; }
         public string HospitalCode { get; set; } = string.Empty;
