@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Service Codes Mapping - Setup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container mt-4">
+    <h2>Service Codes Mapping - Upload</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+    @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+    @if (!string.IsNullOrEmpty(ViewBag.Message as string))
+    {
+        <div class="alert alert-success">@ViewBag.Message</div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="UploadExcel" asp-controller="ServiceCodesMapping" method="post" enctype="multipart/form-data">
+                <div class="form-group mb-3">
+                    <label for="file">Excel File</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls" required />
+                    <small class="form-text text-muted">
+                        Expected columns: ItemId (optional), ItemRelation (required), Name (recommended), NPHIESCode (optional), NPHIESDescription (optional).
+                    </small>
+                </div>
+
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">Create Mapping Session</button>
+            </form>
+        </div>
+    </div>
+</div>
