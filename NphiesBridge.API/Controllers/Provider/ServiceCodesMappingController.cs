@@ -69,7 +69,7 @@ namespace NphiesBridge.API.Controllers.Provider
                         c => c.Address.ColumnNumber,
                         StringComparer.OrdinalIgnoreCase);
 
-                    string[] requiredHeaders = { "ItemRelation", "Name" };
+                    string[] requiredHeaders = { "ItemRelation"};
                     foreach (var h in requiredHeaders)
                     {
                         if (!headers.ContainsKey(h))

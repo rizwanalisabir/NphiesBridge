@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NphiesBridge.Shared.DTOs;
+using NphiesBridge.Web.Services;
 using NphiesBridge.Web.Services.API;
 
 namespace NphiesBridge.Web.Controllers
@@ -8,14 +9,17 @@ namespace NphiesBridge.Web.Controllers
     {
         private readonly ServiceCodesMappingApiService _api;
         private readonly AuthService _auth;
+        private readonly ExcelTemplateService _excel;
+        private readonly ILogger<ServiceCodesMappingController> _logger;
 
-        public ServiceCodesMappingController(ServiceCodesMappingApiService api, AuthService auth)
+        public ServiceCodesMappingController(ServiceCodesMappingApiService api, AuthService auth, ExcelTemplateService excel, ILogger<ServiceCodesMappingController> logger)
         {
             _api = api;
             _auth = auth;
+            _excel = excel;
+            _logger = logger;
         }
 
-        // GET: setup/upload page
         [HttpGet]
         public IActionResult ServiceMappingSetup(string? message = null, string? error = null)
         {
@@ -24,16 +28,30 @@ namespace NphiesBridge.Web.Controllers
             return View();
         }
 
-        // POST: handle Excel upload -> creates session then redirect to mapping view
+        // Download Service Codes template (like ICD template)
+        [HttpGet]
+        public IActionResult DownloadTemplate()
+        {
+            try
+            {
+                var bytes = _excel.GenerateServiceCodesTemplate();
+                var fileName = $"Service_Codes_Mapping_Template_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating Service Codes template");
+                TempData["Error"] = "Failed to generate template.";
+                return RedirectToAction(nameof(ServiceMappingSetup));
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadExcel(IFormFile file, CancellationToken ct)
         {
             if (!_auth.IsAuthenticated())
-            {
-                TempData["Error"] = "You must be logged in.";
                 return RedirectToAction("Login", "Auth");
-            }
 
             var user = _auth.GetCurrentUser();
             if (user?.HealthProviderId == null || user.HealthProviderId == Guid.Empty)
@@ -58,14 +76,11 @@ namespace NphiesBridge.Web.Controllers
             return RedirectToAction(nameof(ServiceMappingSetup));
         }
 
-        // GET: mapping page for a session (first 100 items)
         [HttpGet]
         public async Task<IActionResult> ServiceMapping(string sessionId, int page = 1, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(sessionId))
-            {
                 return RedirectToAction(nameof(ServiceMappingSetup), new { error = "Session not specified" });
-            }
 
             var sessionResp = await _api.GetSessionPageAsync(sessionId, page, 100, ct);
             var statsResp = await _api.GetStatisticsAsync(sessionId, ct);
@@ -74,24 +89,21 @@ namespace NphiesBridge.Web.Controllers
             ViewBag.ApiErrors = (sessionResp?.Errors ?? new List<string>()).Concat(statsResp?.Errors ?? new List<string>()).ToList();
 
             if (sessionResp?.Success == true && sessionResp.Data != null)
-            {
                 return View(sessionResp.Data);
-            }
 
             return RedirectToAction(nameof(ServiceMappingSetup), new { error = sessionResp?.Errors?.FirstOrDefault() ?? "Unable to load session" });
         }
 
-        // POST: approve all high-confidence suggestions (up to 100)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveAllHigh(string sessionId, int max = 100, CancellationToken ct = default)
         {
             var resp = await _api.ApproveAllHighAsync(sessionId, max, ct);
             var message = resp?.Success == true ? "Approved high-confidence mappings." : (resp?.Errors?.FirstOrDefault() ?? "Failed to approve.");
-            return RedirectToAction(nameof(ServiceMapping), new { sessionId, message });
+            TempData["Message"] = message;
+            return RedirectToAction(nameof(ServiceMapping), new { sessionId });
         }
 
-        // POST: save a single mapping from the grid
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveRowMapping(CreateServiceCodeMappingDto dto, string sessionId, int page = 1, CancellationToken ct = default)
@@ -103,12 +115,45 @@ namespace NphiesBridge.Web.Controllers
             }
 
             var resp = await _api.SaveMappingAsync(dto, ct);
-            if (resp?.Success == true)
-                TempData["Message"] = "Mapping saved.";
-            else
-                TempData["Error"] = resp?.Errors?.FirstOrDefault() ?? "Failed to save mapping.";
-
+            TempData["Message"] = resp?.Success == true ? "Mapping saved." : resp?.Errors?.FirstOrDefault() ?? "Failed to save mapping.";
             return RedirectToAction(nameof(ServiceMapping), new { sessionId, page });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateSuggestions(string sessionId, int limit = 100, CancellationToken ct = default)
+        {
+            var resp = await _api.GenerateSuggestionsAsync(sessionId, limit, ct);
+            TempData["Message"] = resp?.Success == true ? "Generated AI suggestions." : resp?.Errors?.FirstOrDefault() ?? "Failed to generate suggestions.";
+            return RedirectToAction(nameof(ServiceMapping), new { sessionId });
+        }
+
+        // AJAX endpoints (for a smoother experience, similar to icd-mapping.js style)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveRowMappingAjax([FromForm] CreateServiceCodeMappingDto dto, [FromForm] string sessionId, CancellationToken ct = default)
+        {
+            if (dto == null || dto.ProviderServiceItemId == Guid.Empty || string.IsNullOrWhiteSpace(dto.NphiesServiceCode))
+                return Json(new { success = false, message = "Invalid mapping data." });
+
+            var resp = await _api.SaveMappingAsync(dto, ct);
+            return Json(new { success = resp?.Success == true, message = resp?.Success == true ? "Mapping saved." : resp?.Errors?.FirstOrDefault() ?? "Failed to save mapping." });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateSuggestionsAjax([FromForm] string sessionId, [FromForm] int limit = 100, CancellationToken ct = default)
+        {
+            var resp = await _api.GenerateSuggestionsAsync(sessionId, limit, ct);
+            return Json(new { success = resp?.Success == true, message = resp?.Message ?? (resp?.Success == true ? "Generated AI suggestions." : "Failed to generate suggestions.") });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveAllHighAjax([FromForm] string sessionId, [FromForm] int max = 100, CancellationToken ct = default)
+        {
+            var resp = await _api.ApproveAllHighAsync(sessionId, max, ct);
+            return Json(new { success = resp?.Success == true, message = resp?.Message ?? (resp?.Success == true ? "Approved." : "Failed to approve.") });
         }
     }
 }

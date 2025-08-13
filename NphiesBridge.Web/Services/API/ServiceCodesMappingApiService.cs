@@ -92,5 +92,16 @@ namespace NphiesBridge.Web.Services.API
 
             return JsonSerializer.Deserialize<ApiResponse>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
+        public async Task<ApiResponse?> GenerateSuggestionsAsync(string sessionId, int limit = 100, CancellationToken ct = default)
+        {
+            var url = $"ServiceCodesMapping/session/{sessionId}/generate-suggestions?limit={limit}";
+            using var req = new HttpRequestMessage(HttpMethod.Post, url);
+            AttachAuth(req);
+
+            var res = await _client.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            return JsonSerializer.Deserialize<ApiResponse>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
     }
 }

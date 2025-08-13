@@ -115,6 +115,85 @@ namespace NphiesBridge.Web.Services
             return stream.ToArray();
         }
 
+        public byte[] GenerateServiceCodesTemplate()
+        {
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Service Codes Template");
+
+            var headers = new[]
+            {
+                "ItemId",
+                "ItemRelation",
+                "Name",
+                "NPHIESCode",
+                "NPHIESDescription"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = worksheet.Cell(1, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = XLColor.LightBlue;
+                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            }
+
+            var sampleData = new[]
+            {
+                new { ItemId = "LAB1001", ItemRelation = "HB_A1C", Name = "Hemoglobin A1C", NphiesCode = "", NphiesDescription = "" },
+                new { ItemId = "RAD2005", ItemRelation = "CHEST_XRAY", Name = "Chest X-Ray PA", NphiesCode = "", NphiesDescription = "" },
+                new { ItemId = "", ItemRelation = "CONSULT_GEN", Name = "General Consultation", NphiesCode = "", NphiesDescription = "" },
+                new { ItemId = "MED3007", ItemRelation = "AMOX500", Name = "Amoxicillin 500mg", NphiesCode = "XYZ123", NphiesDescription = "Example code prefilled" }
+            };
+
+            for (int i = 0; i < sampleData.Length; i++)
+            {
+                var row = i + 2;
+                worksheet.Cell(row, 1).Value = sampleData[i].ItemId;
+                worksheet.Cell(row, 2).Value = sampleData[i].ItemRelation;
+                worksheet.Cell(row, 3).Value = sampleData[i].Name;
+                worksheet.Cell(row, 4).Value = sampleData[i].NphiesCode;
+                worksheet.Cell(row, 5).Value = sampleData[i].NphiesDescription;
+
+                for (int col = 1; col <= 5; col++)
+                {
+                    worksheet.Cell(row, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    if (col == 2)
+                        worksheet.Cell(row, col).Style.Fill.BackgroundColor = XLColor.LightYellow; // required
+                }
+            }
+
+            var instructionsSheet = workbook.Worksheets.Add("Instructions");
+            instructionsSheet.Cell(1, 1).Value = "Service Codes Mapping Template Instructions";
+            instructionsSheet.Cell(1, 1).Style.Font.Bold = true;
+            instructionsSheet.Cell(1, 1).Style.Font.FontSize = 16;
+
+            var lines = new[]
+            {
+                "Columns:",
+                "1) ItemId: Optional provider item identifier",
+                "2) ItemRelation: Required - unique key per item within your system (used for mapping)",
+                "3) Name: Recommended - used for AI suggestions",
+                "4) NPHIESCode: Optional - prefill to skip AI",
+                "5) NPHIESDescription: Optional - extra context",
+                "",
+                "Tips:",
+                "- Provide clear 'Name' for better AI suggestions.",
+                "- If 'NPHIESCode' is known, the row will be considered mapped.",
+                "- Leave NPHIESCode empty to get AI suggestions on the mapping page."
+            };
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                instructionsSheet.Cell(i + 2, 1).Value = lines[i];
+            }
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
+        }
+
         public ExcelValidationResult ValidateTemplate(IFormFile file)
         {
             var result = new ExcelValidationResult();
