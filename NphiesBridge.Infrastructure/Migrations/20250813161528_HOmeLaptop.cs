@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class all : Migration
+    public partial class HOmeLaptop : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -63,6 +63,22 @@ namespace NphiesBridge.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_NphiesIcdCodes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NphiesServiceCodes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NphiesServiceCodeValue = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NphiesServiceDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NphiesServiceCodes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -127,7 +143,7 @@ namespace NphiesBridge.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SessionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OriginalFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalRows = table.Column<int>(type: "int", nullable: false),
@@ -143,6 +159,34 @@ namespace NphiesBridge.Infrastructure.Migrations
                     table.PrimaryKey("PK_MappingSessions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_MappingSessions_HealthProviders_HealthProviderId",
+                        column: x => x.HealthProviderId,
+                        principalTable: "HealthProviders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServiceMappingSessions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalRows = table.Column<int>(type: "int", nullable: false),
+                    ProcessedRows = table.Column<int>(type: "int", nullable: false),
+                    CompletedRows = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceMappingSessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceMappingSessions_HealthProviders_HealthProviderId",
                         column: x => x.HealthProviderId,
                         principalTable: "HealthProviders",
                         principalColumn: "Id",
@@ -267,17 +311,51 @@ namespace NphiesBridge.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "HealthProviderServiceCodes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HealthProviderServiceId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    HealthProviderServiceRelation = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    HealthProviderServiceName = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
+                    NphiesServiceCode = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    IsMapped = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ServiceMappingSessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HealthProviderServiceCodes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_HealthProviderServiceCodes_HealthProviders_HealthProviderId",
+                        column: x => x.HealthProviderId,
+                        principalTable: "HealthProviders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_HealthProviderServiceCodes_ServiceMappingSessions_ServiceMappingSessionId",
+                        column: x => x.ServiceMappingSessionId,
+                        principalTable: "ServiceMappingSessions",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IcdCodeMappings",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     NphiesIcdCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HealthProviderIcdCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MappedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MappedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAiSuggested = table.Column<bool>(type: "bit", nullable: false),
                     ConfidenceScore = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HospitalCodeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MappingSessionID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HospitalIcdCodeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -286,17 +364,39 @@ namespace NphiesBridge.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_IcdCodeMappings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_IcdCodeMappings_AspNetUsers_MappedByUserId",
-                        column: x => x.MappedByUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_IcdCodeMappings_HospitalIcdCodes_HospitalCodeId",
-                        column: x => x.HospitalCodeId,
+                        name: "FK_IcdCodeMappings_HospitalIcdCodes_HospitalIcdCodeId",
+                        column: x => x.HospitalIcdCodeId,
                         principalTable: "HospitalIcdCodes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServiceCodeMappings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HealthProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NphiesServiceCode = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    HealthProviderServiceId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    HealthProviderServiceRelation = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    MappedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MappedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsAiSuggested = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ConfidenceScore = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    ServiceMappingSessionID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HealthProviderServiceCodeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceCodeMappings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceCodeMappings_HealthProviderServiceCodes_HealthProviderServiceCodeId",
+                        column: x => x.HealthProviderServiceCodeId,
+                        principalTable: "HealthProviderServiceCodes",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
@@ -304,8 +404,8 @@ namespace NphiesBridge.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Description", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { new Guid("3998c9b7-aaba-475a-9737-b1f1fb6d4d36"), null, "System Administrator", "Admin", "ADMIN" },
-                    { new Guid("74ea35df-eac7-43f1-ac4b-c4045f0a4331"), null, "Healthcare Provider User", "Provider", "PROVIDER" }
+                    { new Guid("49dacab5-1661-4139-8d0d-7fe53ed5b5e5"), null, "Healthcare Provider User", "Provider", "PROVIDER" },
+                    { new Guid("e3761bda-73d3-4b48-9891-80a75062804c"), null, "System Administrator", "Admin", "ADMIN" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -358,6 +458,16 @@ namespace NphiesBridge.Infrastructure.Migrations
                 column: "LicenseNumber");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HealthProviderServiceCodes_HealthProviderId",
+                table: "HealthProviderServiceCodes",
+                column: "HealthProviderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HealthProviderServiceCodes_ServiceMappingSessionId",
+                table: "HealthProviderServiceCodes",
+                column: "ServiceMappingSessionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_HospitalIcdCodes_HealthProviderId",
                 table: "HospitalIcdCodes",
                 column: "HealthProviderId");
@@ -368,18 +478,23 @@ namespace NphiesBridge.Infrastructure.Migrations
                 column: "MappingSessionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IcdCodeMappings_HospitalCodeId",
+                name: "IX_IcdCodeMappings_HospitalIcdCodeId",
                 table: "IcdCodeMappings",
-                column: "HospitalCodeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_IcdCodeMappings_MappedByUserId",
-                table: "IcdCodeMappings",
-                column: "MappedByUserId");
+                column: "HospitalIcdCodeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MappingSessions_HealthProviderId",
                 table: "MappingSessions",
+                column: "HealthProviderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceCodeMappings_HealthProviderServiceCodeId",
+                table: "ServiceCodeMappings",
+                column: "HealthProviderServiceCodeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceMappingSessions_HealthProviderId",
+                table: "ServiceMappingSessions",
                 column: "HealthProviderId");
         }
 
@@ -408,6 +523,12 @@ namespace NphiesBridge.Infrastructure.Migrations
                 name: "NphiesIcdCodes");
 
             migrationBuilder.DropTable(
+                name: "NphiesServiceCodes");
+
+            migrationBuilder.DropTable(
+                name: "ServiceCodeMappings");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -417,7 +538,13 @@ namespace NphiesBridge.Infrastructure.Migrations
                 name: "HospitalIcdCodes");
 
             migrationBuilder.DropTable(
+                name: "HealthProviderServiceCodes");
+
+            migrationBuilder.DropTable(
                 name: "MappingSessions");
+
+            migrationBuilder.DropTable(
+                name: "ServiceMappingSessions");
 
             migrationBuilder.DropTable(
                 name: "HealthProviders");

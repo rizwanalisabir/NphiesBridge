@@ -12,8 +12,8 @@ using NphiesBridge.Infrastructure.Data;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250812135648_AddNewColumn")]
-    partial class AddNewColumn
+    [Migration("20250813161528_HOmeLaptop")]
+    partial class HOmeLaptop
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -161,14 +161,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("2d95de42-0f69-482c-a4a4-5178232f98bf"),
+                            Id = new Guid("e3761bda-73d3-4b48-9891-80a75062804c"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("4ff3b76b-382f-43fb-930e-ada165b8ba9e"),
+                            Id = new Guid("49dacab5-1661-4139-8d0d-7fe53ed5b5e5"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"
@@ -487,6 +487,206 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.ToTable("NphiesIcdCodes");
                 });
 
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceCodeMapping.NphiesServiceCodes", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NphiesServiceCodeValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NphiesServiceDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NphiesServiceCodes");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.HealthProviderServiceCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("HealthProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HealthProviderServiceId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("HealthProviderServiceName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("HealthProviderServiceRelation")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMapped")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("NphiesServiceCode")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid?>("ServiceMappingSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthProviderId");
+
+                    b.HasIndex("ServiceMappingSessionId");
+
+                    b.ToTable("HealthProviderServiceCodes");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.ServiceCodeMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConfidenceScore")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("HealthProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("HealthProviderServiceCodeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HealthProviderServiceId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("HealthProviderServiceRelation")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<bool>("IsAiSuggested")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("MappedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MappedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NphiesServiceCode")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("ServiceMappingSessionID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthProviderServiceCodeId");
+
+                    b.ToTable("ServiceCodeMappings");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.ServiceMappingSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CompletedRows")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HealthProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProcessedRows")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("TotalRows")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthProviderId");
+
+                    b.ToTable("ServiceMappingSessions");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("NphiesBridge.Core.Entities.ApplicationRole", null)
@@ -583,6 +783,41 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.Navigation("HealthProvider");
                 });
 
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.HealthProviderServiceCode", b =>
+                {
+                    b.HasOne("NphiesBridge.Core.Entities.HealthProvider", "HealthProvider")
+                        .WithMany()
+                        .HasForeignKey("HealthProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NphiesBridge.Core.Entities.ServiceMapping.ServiceMappingSession", "ServiceMappingSession")
+                        .WithMany("HealthProviderServiceCodes")
+                        .HasForeignKey("ServiceMappingSessionId");
+
+                    b.Navigation("HealthProvider");
+
+                    b.Navigation("ServiceMappingSession");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.ServiceCodeMapping", b =>
+                {
+                    b.HasOne("NphiesBridge.Core.Entities.ServiceMapping.HealthProviderServiceCode", null)
+                        .WithMany("Mappings")
+                        .HasForeignKey("HealthProviderServiceCodeId");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.ServiceMappingSession", b =>
+                {
+                    b.HasOne("NphiesBridge.Core.Entities.HealthProvider", "HealthProvider")
+                        .WithMany()
+                        .HasForeignKey("HealthProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HealthProvider");
+                });
+
             modelBuilder.Entity("NphiesBridge.Core.Entities.HealthProvider", b =>
                 {
                     b.Navigation("Users");
@@ -596,6 +831,16 @@ namespace NphiesBridge.Infrastructure.Migrations
             modelBuilder.Entity("NphiesBridge.Core.Entities.IcdMapping.MappingSession", b =>
                 {
                     b.Navigation("HospitalCodes");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.HealthProviderServiceCode", b =>
+                {
+                    b.Navigation("Mappings");
+                });
+
+            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.ServiceMappingSession", b =>
+                {
+                    b.Navigation("HealthProviderServiceCodes");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,128 @@
+﻿@{
+    ViewData["Title"] = "Service Code Mapping Setup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="mapping-header">
+                <h2 class="display-5 fw-bold text-white mb-3">Service Code Mapping Setup</h2>
+                <hr />
+                <p class="lead text-muted mb-0">Let's map your hospital's service codes to NPHIES standards</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-11">
+
+            <!-- Step 1: Download Template -->
+            <div class="setup-card mb-4" id="step1">
+                <div>
+                    <span class="step-number-big">1</span>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
+                        <div class="step-info">
+                            <h3 class="h4 fw-bold text-dark mb-2">Download Excel Template</h3>
+                            <p class="text-muted mb-0">Get our pre-formatted template to upload your service codes</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="template-preview-card">
+                            <h5 class="fw-semibold mb-3 text-muted">Template Structure <span class="fs-10"> (4 Columns included in excel template)</span></h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="column-card">
+                                        <div class="column-header">
+                                            <i data-lucide="code" class="column-icon"></i>
+                                            <span class="column-name">Provider Service ID</span>
+                                        </div>
+                                        <p class="column-desc">Optional - If you have an internal ID</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="column-card required">
+                                        <div class="column-header">
+                                            <i data-lucide="hospital" class="column-icon"></i>
+                                            <span class="column-name">Service Relation</span>
+                                        </div>
+                                        <p class="column-desc">Required - e.g. Procedure, Lab, Radiology</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-2">
+                                    <div class="column-card required">
+                                        <div class="column-header">
+                                            <i data-lucide="stethoscope" class="column-icon"></i>
+                                            <span class="column-name">Service Name</span>
+                                        </div>
+                                        <p class="column-desc">Required - Service/procedure/diagnostic name</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-2">
+                                    <div class="column-card">
+                                        <div class="column-header">
+                                            <i data-lucide="file-text" class="column-icon"></i>
+                                            <span class="column-name">NPHIES Service Code</span>
+                                        </div>
+                                        <p class="column-desc">Optional - If you know the equivalent</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Upload Excel -->
+            <div class="setup-card mb-4" id="step2">
+                <div>
+                    <span class="step-number-big">2</span>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
+                        <div class="step-info">
+                            <h3 class="h4 fw-bold text-dark mb-2">Upload Your Excel File</h3>
+                            <p class="text-muted mb-0">Upload the filled template with your codes.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <input type="file" class="form-control" id="serviceExcelUpload" accept=".xls,.xlsx" />
+                        <small class="text-muted">Supported formats: .xls, .xlsx</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Start Mapping -->
+            <div class="setup-card mb-4" id="step3">
+                <div>
+                    <span class="step-number-big">3</span>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
+                        <div class="step-info">
+                            <h3 class="h4 fw-bold text-dark mb-2">Start Mapping</h3>
+                            <p class="text-muted mb-0">Begin the mapping process to NPHIES codes.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <button class="btn btn-primary" id="startMappingBtn">Start Mapping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // TODO: Wire up file upload and Start Mapping button to ServiceMappingApiService
+</script>

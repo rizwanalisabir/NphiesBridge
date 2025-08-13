@@ -158,14 +158,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3a37ffbe-719f-42fd-a0eb-abc9c439bf4a"),
+                            Id = new Guid("e3761bda-73d3-4b48-9891-80a75062804c"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("2f578132-a52f-453f-acdc-3c0e1df6540b"),
+                            Id = new Guid("49dacab5-1661-4139-8d0d-7fe53ed5b5e5"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"

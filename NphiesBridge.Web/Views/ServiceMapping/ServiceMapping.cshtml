@@ -1,0 +1,159 @@
+﻿@using NphiesBridge.Shared.DTOs
+@model ServiceMappingPageDto
+
+@{
+    ViewData["Title"] = "Service Code Mapping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-primary">Service Code Mapping</h2>
+            <p class="text-secondary">Map your hospital service codes to NPHIES standardized codes. Use AI-powered suggestions or manual mapping for accuracy.</p>
+        </div>
+    </div>
+
+    <!-- Progress bar and statistics -->
+    <div class="row mb-3">
+        <div class="col-md-7">
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar" role="progressbar"
+                     style="width:@((Model.TotalRows > 0 ? Model.HealthProviderServiceCodes.Count(c => c.IsMapped) * 100 / Model.TotalRows : 0))%;"
+                     aria-valuenow="@Model.HealthProviderServiceCodes.Count(c => c.IsMapped)"
+                     aria-valuemin="0"
+                     aria-valuemax="@Model.TotalRows">
+                    @Model.HealthProviderServiceCodes.Count(c => c.IsMapped) of @Model.TotalRows mapped
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 text-end">
+            <button class="btn btn-success me-2" id="bulkMatchBtn">Bulk Match (AI)</button>
+            <a asp-action="ExportMappings" asp-route-sessionId="@Model.SessionId" class="btn btn-outline-primary">Export Mappings</a>
+        </div>
+    </div>
+
+    <!-- Mapping Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Provider Service Codes</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Provider Service ID</th>
+                            <th>Relation</th>
+                            <th>Service Name</th>
+                            <th>NPHIES Service Code</th>
+                            <th>Status</th>
+                            <th>Confidence</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.HealthProviderServiceCodes.Any())
+                        {
+                            int idx = 1;
+                            foreach (var code in Model.HealthProviderServiceCodes)
+                            {
+                                <tr class="@(code.IsMapped ? "table-success" : "table-warning")">
+                                    <td>@idx</td>
+                                    <td>@code.HealthProviderServiceId</td>
+                                    <td>@code.HealthProviderServiceRelation</td>
+                                    <td>@code.HealthProviderServiceName</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(code.NphiesServiceCode))
+                                        {
+                                            <span class="badge bg-info">@code.NphiesServiceCode</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unmapped</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (code.IsMapped)
+                                        {
+                                            <span class="text-success fw-semibold">Mapped</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-semibold">Unmapped</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (code.MatchConfidence > 0)
+                                        {
+                                            <span class="badge bg-secondary">@code.MatchConfidence%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" onclick="getAiSuggestion('@code.HealthProviderServiceId', '@code.HealthProviderServiceRelation', '@code.HealthProviderServiceName', @idx)">AI Suggestion</button>
+                                        <button class="btn btn-sm btn-outline-success me-1" onclick="showManualMappingModal('@code.Id', @idx)">Manual Map</button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewMappingDetail('@code.Id')">Details</button>
+                                    </td>
+                                </tr>
+                                idx++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No provider service codes found in this session.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Manual Mapping -->
+<div class="modal fade" id="manualMappingModal" tabindex="-1" aria-labelledby="manualMappingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- TODO: Implement manual mapping form -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="manualMappingModalLabel">Manual Mapping</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Mapping form fields go here -->
+                <p>Manual mapping form will appear here...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // TODO: Implement client-side logic to call ServiceMappingApiService for:
+    // - Bulk match
+    // - AI suggestion per row
+    // - Manual map modal
+    // - Export functionality
+
+    function getAiSuggestion(serviceId, relation, name, idx) {
+        // Call ServiceMappingApiService.GetAiSuggestionAsync and update row UI
+        alert('AI Suggestion for row ' + idx + ' will be implemented!');
+    }
+
+    function showManualMappingModal(id, idx) {
+        // Show modal for manual mapping
+        $('#manualMappingModal').modal('show');
+    }
+
+    function viewMappingDetail(id) {
+        // Show details (can be modal or redirect)
+        alert('Detail for mapping ID: ' + id);
+    }
+</script>
