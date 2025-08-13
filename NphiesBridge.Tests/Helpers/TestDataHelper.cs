@@ -5,11 +5,11 @@ namespace NphiesBridge.Tests.Helpers
 {
     public static class TestDataHelper
     {
-        public static List<NphiesIcdCode> GetSampleIcdCodes()
+        public static List<NphiesServiceCode> GetSampleIcdCodes()
         {
-            return new List<NphiesIcdCode>
+            return new List<NphiesServiceCode>
             {
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "E11.9",
@@ -18,7 +18,7 @@ namespace NphiesBridge.Tests.Helpers
                     Chapter = "Chapter IV",
                     IsActive = true
                 },
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "I10",
@@ -27,7 +27,7 @@ namespace NphiesBridge.Tests.Helpers
                     Chapter = "Chapter IX",
                     IsActive = true
                 },
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "J45.9",
@@ -36,7 +36,7 @@ namespace NphiesBridge.Tests.Helpers
                     Chapter = "Chapter X",
                     IsActive = true
                 },
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "K59.0",
@@ -45,7 +45,7 @@ namespace NphiesBridge.Tests.Helpers
                     Chapter = "Chapter XI",
                     IsActive = true
                 },
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "F32.9",
@@ -54,7 +54,7 @@ namespace NphiesBridge.Tests.Helpers
                     Chapter = "Chapter V",
                     IsActive = true
                 },
-                new NphiesIcdCode
+                new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = "INACTIVE",
@@ -66,15 +66,15 @@ namespace NphiesBridge.Tests.Helpers
             };
         }
 
-        public static List<NphiesIcdCode> GetLargeDataset()
+        public static List<NphiesServiceCode> GetLargeDataset()
         {
-            var codes = new List<NphiesIcdCode>();
+            var codes = new List<NphiesServiceCode>();
             var random = new Random(12345); // Fixed seed for reproducible tests
 
             // Generate 1000 test codes for performance testing
             for (int i = 0; i < 1000; i++)
             {
-                codes.Add(new NphiesIcdCode
+                codes.Add(new NphiesServiceCode
                 {
                     Id = Guid.NewGuid(),
                     Code = $"T{i:D3}.{random.Next(0, 9)}",

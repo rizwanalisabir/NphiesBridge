@@ -1,6 +1,6 @@
 ﻿namespace NphiesBridge.Core.Entities.IcdMapping
 {
-    public class NphiesIcdCode : BaseEntity
+    public class NphiesServiceCode : BaseEntity
     {
         public string Code { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;

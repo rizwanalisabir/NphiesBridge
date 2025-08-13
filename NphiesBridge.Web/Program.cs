@@ -38,19 +38,9 @@ builder.Services.AddHttpClient<IcdMappingApiService>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "NCDOXS-ICD-Mapping");
 });
 
-// Add Service Codes Mapping API Service
-builder.Services.AddHttpClient<ServiceCodesMappingApiService>(client =>
-{
-    client.BaseAddress = new Uri($"{apiBaseUrl}/api/");
-    client.Timeout = TimeSpan.FromMinutes(5);
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-    client.DefaultRequestHeaders.Add("User-Agent", "NCDOXS-ServiceCodes-Mapping");
-});
-
 // Register existing services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ExcelTemplateService>();
-builder.Services.AddScoped<ServiceCodesMappingApiService>();
 
 var app = builder.Build();
 
@@ -75,11 +65,6 @@ app.MapControllerRoute(
     name: "icd-mapping",
     pattern: "IcdMapping/{action=Index}/{id?}",
     defaults: new { controller = "IcdMapping" });
-// Service Codes Mapping routes
-app.MapControllerRoute(
-    name: "service-codes-mapping",
-    pattern: "ServiceCodesMapping/{action=ServiceMappingSetup}/{id?}",
-    defaults: new { controller = "ServiceCodesMapping" });
 // Set default route to Login
 app.MapControllerRoute(
     name: "default",

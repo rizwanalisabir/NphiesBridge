@@ -234,18 +234,18 @@ namespace NphiesBridge.Infrastructure.Repositories
             }
         }
 
-        private async Task<List<NphiesIcdCode>> GetCandidateCodesAsync(string diagnosisName, string? diagnosisDescription = null)
+        private async Task<List<NphiesServiceCode>> GetCandidateCodesAsync(string diagnosisName, string? diagnosisDescription = null)
         {
             try
             {
                 // Try to get from cache first
                 var cacheKey = $"candidates_{diagnosisName.ToLower().GetHashCode()}";
-                if (_cache.TryGetValue(cacheKey, out List<NphiesIcdCode>? cachedCandidates))
+                if (_cache.TryGetValue(cacheKey, out List<NphiesServiceCode>? cachedCandidates))
                 {
-                    return cachedCandidates ?? new List<NphiesIcdCode>();
+                    return cachedCandidates ?? new List<NphiesServiceCode>();
                 }
 
-                var candidates = new List<NphiesIcdCode>();
+                var candidates = new List<NphiesServiceCode>();
                 var searchText = diagnosisName.ToLower().Trim();
                 var searchWords = ExtractMedicalKeywords(searchText);
 
@@ -299,14 +299,14 @@ namespace NphiesBridge.Infrastructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting candidate codes for: {DiagnosisName}", diagnosisName);
-                return new List<NphiesIcdCode>();
+                return new List<NphiesServiceCode>();
             }
         }
 
         private async Task<List<FuzzyMatchResult>> PerformFuzzyMatching(
             string diagnosisName,
             string? diagnosisDescription,
-            List<NphiesIcdCode> candidates)
+            List<NphiesServiceCode> candidates)
         {
             try
             {
@@ -356,7 +356,7 @@ namespace NphiesBridge.Infrastructure.Repositories
 
         private (double TotalScore, string MatchType, Dictionary<string, object> Details) CalculateComprehensiveSimilarity(
             string searchText,
-            NphiesIcdCode candidate)
+            NphiesServiceCode candidate)
         {
             var candidateText = candidate.Description.ToLower();
             var details = new Dictionary<string, object>();

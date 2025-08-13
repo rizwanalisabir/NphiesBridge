@@ -2,7 +2,7 @@
 
 namespace NphiesBridge.Core.Entities.IcdMapping
 {
-    public class IcdCodeMapping : BaseEntity
+    public class ServiceCodeMapping : BaseEntity
     {
         public Guid HealthProviderId { get; set; }
         public string NphiesIcdCode { get; set; } = string.Empty;

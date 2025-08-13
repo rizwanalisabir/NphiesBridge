@@ -10,7 +10,6 @@ using NphiesBridge.Core.Entities;
 using NphiesBridge.Core.Interfaces;
 using NphiesBridge.Infrastructure.Data;
 using NphiesBridge.Infrastructure.Repositories;
-using NphiesBridge.Infrastructure.Services.AI;
 using NphiesBridge.Shared.Validators;
 using Serilog;
 using System.Text;
@@ -86,7 +85,6 @@ builder.Services.AddScoped<IHealthProviderRepository, HealthProviderRepository>(
 // Register the AI matching service
 //builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
 builder.Services.AddScoped<IAiFuzzyMatchingService, SimpleFuzzyMatchingService>();
-builder.Services.AddScoped<IAiServiceMatchingService, ServiceCodesFuzzyMatchingService>();
 // Add after other service registrations
 builder.Services.AddScoped<IJwtService, JwtService>();
 
