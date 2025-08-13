@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -85,6 +86,7 @@ builder.Services.AddScoped<IHealthProviderRepository, HealthProviderRepository>(
 // Register the AI matching service
 //builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
 builder.Services.AddScoped<IAiFuzzyMatchingService, SimpleFuzzyMatchingService>();
+builder.Services.AddScoped<IAiFuzzyServiceMappingService, SimpleFuzzyServiceMappingService>();
 // Add after other service registrations
 builder.Services.AddScoped<IJwtService, JwtService>();
 
