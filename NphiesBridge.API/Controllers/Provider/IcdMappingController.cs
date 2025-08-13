@@ -255,7 +255,7 @@ namespace NphiesBridge.API.Controllers
             return Guid.Empty;
         }
 
-        private byte[] GenerateExcelFile(dynamic mappings, Dictionary<string, string> nphiesCodes, ServiceMappingSession session)
+        private byte[] GenerateExcelFile(dynamic mappings, Dictionary<string, string> nphiesCodes, MappingSession session)
         {
             try
             {
@@ -339,7 +339,7 @@ namespace NphiesBridge.API.Controllers
                 try
                 {
                     // Create mapping session
-                    var session = new ServiceMappingSession
+                    var session = new MappingSession
                     {
                         Id = Guid.NewGuid(),
                         SessionId = request.SessionId,
@@ -361,11 +361,11 @@ namespace NphiesBridge.API.Controllers
                     // Save hospital codes to database
                     if (request.HospitalCodes?.Any() == true)
                     {
-                        var hospitalCodes = new List<HospitalServiceCode>();
+                        var hospitalCodes = new List<HospitalIcdCode>();
 
                         foreach (var code in request.HospitalCodes)
                         {
-                            var hospitalCode = new HospitalServiceCode
+                            var hospitalCode = new HospitalIcdCode
                             {
                                 Id = Guid.NewGuid(),
                                 HospitalCode = code.HospitalCode ?? "",
@@ -514,7 +514,7 @@ namespace NphiesBridge.API.Controllers
                 else
                 {
                     // Create new mapping
-                    var newMapping = new ServiceCodeMapping
+                    var newMapping = new IcdCodeMapping
                     {
                         Id = Guid.NewGuid(),
                         HealthProviderId = request.HealthProviderId,
@@ -612,7 +612,7 @@ namespace NphiesBridge.API.Controllers
                             else
                             {
                                 // Create new mapping
-                                var newMapping = new ServiceCodeMapping
+                                var newMapping = new IcdCodeMapping
                                 {
                                     Id = Guid.NewGuid(),
                                     HealthProviderId = mappingRequest.HealthProviderId,

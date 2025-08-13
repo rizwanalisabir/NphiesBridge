@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NphiesBridge.Core.Entities;
 using NphiesBridge.Core.Entities.IcdMapping;
+using NphiesBridge.Core.Entities.ServiceCodeMapping;
 using NphiesBridge.Core.Entities.ServiceMapping;
 
 namespace NphiesBridge.Infrastructure.Data
@@ -20,6 +21,8 @@ namespace NphiesBridge.Infrastructure.Data
         public DbSet<ServiceCodeMapping> ServiceCodeMappings { get; set; } = null!;
         public DbSet<HealthProviderServiceCode> HealthProviderServiceCodes { get; set; } = null!;
         public DbSet<ServiceMappingSession> ServiceMappingSessions { get; set; } = null!;
+
+        public DbSet<NphiesServiceCodes> NphiesServiceCodes { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

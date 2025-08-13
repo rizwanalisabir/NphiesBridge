@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NphiesBridge.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using NphiesBridge.Infrastructure.Data;
 namespace NphiesBridge.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250813143751_NewEntitiesForServiceMappings2")]
+    partial class NewEntitiesForServiceMappings2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,14 +161,14 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3a37ffbe-719f-42fd-a0eb-abc9c439bf4a"),
+                            Id = new Guid("c39dc88b-f909-4a99-bb1d-27a86157219f"),
                             Description = "System Administrator",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = new Guid("2f578132-a52f-453f-acdc-3c0e1df6540b"),
+                            Id = new Guid("52ab66bd-41e6-4d91-b416-0a8ed925f305"),
                             Description = "Healthcare Provider User",
                             Name = "Provider",
                             NormalizedName = "PROVIDER"
@@ -482,33 +485,6 @@ namespace NphiesBridge.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NphiesIcdCodes");
-                });
-
-            modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceCodeMapping.NphiesServiceCodes", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("NphiesServiceCodeValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NphiesServiceDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NphiesServiceCodes");
                 });
 
             modelBuilder.Entity("NphiesBridge.Core.Entities.ServiceMapping.HealthProviderServiceCode", b =>
