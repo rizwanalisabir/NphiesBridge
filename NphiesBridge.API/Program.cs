@@ -1,20 +1,19 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using NphiesBridge.API.Services;
+using NphiesBridge.Core.Entities;
 using NphiesBridge.Core.Interfaces;
 using NphiesBridge.Infrastructure.Data;
 using NphiesBridge.Infrastructure.Repositories;
+using NphiesBridge.Infrastructure.Services.AI;
 using NphiesBridge.Shared.Validators;
-using Microsoft.AspNetCore.Identity;
-using NphiesBridge.Core.Entities;
 using Serilog;
-using Microsoft.OpenApi.Models;
-
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using NphiesBridge.API.Services;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -87,6 +86,7 @@ builder.Services.AddScoped<IHealthProviderRepository, HealthProviderRepository>(
 // Register the AI matching service
 //builder.Services.AddScoped<IAiFuzzyMatchingService, AiFuzzyMatchingService>();
 builder.Services.AddScoped<IAiFuzzyMatchingService, SimpleFuzzyMatchingService>();
+builder.Services.AddScoped<IAiServiceMatchingService, ServiceCodesFuzzyMatchingService>();
 // Add after other service registrations
 builder.Services.AddScoped<IJwtService, JwtService>();
 
