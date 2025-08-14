@@ -142,9 +142,9 @@ namespace NphiesBridge.Web.Services
             var sampleData = new[]
             {
                 new { ItemId = "LAB1001", ItemRelation = "HB_A1C", Name = "Hemoglobin A1C", NphiesCode = "", NphiesDescription = "" },
-                new { ItemId = "RAD2005", ItemRelation = "CHEST_XRAY", Name = "Chest X-Ray PA", NphiesCode = "", NphiesDescription = "" },
-                new { ItemId = "", ItemRelation = "CONSULT_GEN", Name = "General Consultation", NphiesCode = "", NphiesDescription = "" },
-                new { ItemId = "MED3007", ItemRelation = "AMOX500", Name = "Amoxicillin 500mg", NphiesCode = "XYZ123", NphiesDescription = "Example code prefilled" }
+                new { ItemId = "RAD2005", ItemRelation = "CHEST_XRAY", Name = "Chest X-Ray PA", NphiesCode = "TEST", NphiesDescription = "TEST" },
+                new { ItemId = "TEST", ItemRelation = "CONSULT_GEN", Name = "RINOFED TAB", NphiesCode = "TEST", NphiesDescription = "TEST" },
+                new { ItemId = "MED3007", ItemRelation = "AMOX500", Name = "ALGESAL BAUME CREAM", NphiesCode = "XYZ123", NphiesDescription = "Example code prefilled" }
             };
 
             for (int i = 0; i < sampleData.Length; i++)

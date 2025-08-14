@@ -182,7 +182,7 @@ function renderServiceMappingRows() {
 
         rowsHtml += `
             <div class="mapping-row pending" id="row${rowNumber}" data-row="${rowNumber}" data-service-id="${serviceCode.id}">
-                <div class="row-header">
+                <div class="row-header" style="background: rgb(0 0 0 / 72%);">
                     <div class="row-info">
                         <div class="row-number">${rowNumber}</div>
                         <div>
@@ -250,7 +250,7 @@ function renderServiceMappingRows() {
                                     <div class="dropdown-label">
                                         <i data-lucide="database" style="width: 14px; height: 14px; margin-right: 0.5rem;"></i>
                                         Select OR Change NPHIES Service Code
-                                        <span class="search-performance-badge">⚡ Fast</span>
+                                       /* <span class="search-performance-badge">⚡ Fast</span>*/
                                     </div>
                                     <div class="custom-search-container" id="nphiesSearch${rowNumber}">
                                         <input type="text" 
@@ -266,7 +266,10 @@ function renderServiceMappingRows() {
 
                                 <!-- Provider Search (display only for preview) -->
                                 <div style="display:none" id="providerSearch${rowNumber}">
-                                    <strong class="selected-value">${serviceCode.providerServiceCode}</strong> - ${serviceCode.serviceName || serviceCode.providerServiceName || ''}
+                                    <strong class="selected-value">${serviceCode.healthProviderServiceId}</strong> - ${serviceCode.serviceName || serviceCode.providerServiceName || ''}
+                                </div>
+                                <div style="display:none" id="providerRelation${rowNumber}">
+                                    <strong class="selected-value">${serviceCode.healthProviderServiceRelation}</strong> - ${serviceCode.serviceName || serviceCode.providerServiceName || ''}
                                 </div>
 
                                 <!-- Mapping Preview -->
@@ -278,7 +281,7 @@ function renderServiceMappingRows() {
                                     <div class="mapping-flow">
                                         <div class="mapping-from">
                                             <div class="mapping-label">Provider Service Code</div>
-                                            <div class="mapping-code">${serviceCode.providerServiceCode}</div>
+                                            <div class="mapping-code">${serviceCode.healthProviderServiceId}</div>
                                         </div>
                                         <div class="mapping-arrow">
                                             <i data-lucide="arrow-right" style="width: 24px; height: 24px;"></i>
@@ -405,11 +408,12 @@ async function getServiceAiSuggestion(rowNum) {
 
         const requestBody = {
             providerServiceCodeId: serviceCode.id,
-            serviceName: serviceCode.serviceName || serviceCode.providerServiceName || '',
-            serviceDescription: serviceCode.serviceDescription || serviceCode.providerServiceDescription || '',
-            suggestedServiceCode: serviceCode.suggestedServiceCode || '',
-            providerServiceCode: serviceCode.providerServiceCode,
-            sessionId: mappingSessionId
+            healthProviderServiceName: serviceCode.healthProviderServiceName || '',
+            serviceDescription: '',
+            suggestedServiceCode: serviceCode.nphiesServiceCode || '',
+            healthProviderServiceId: serviceCode.healthProviderServiceId,
+            sessionId: mappingSessionId,
+            healthProviderServiceRelation: serviceCode.healthProviderServiceRelation
         };
 
         console.log('AI suggestion request:', requestBody);
@@ -1090,24 +1094,24 @@ function pauseServiceProcessing() {
 
     const icon = pauseBtn.querySelector('i');
 
-    if (isPaused) {
-        if (icon) icon.setAttribute('data-lucide', 'play');
-        pauseBtn.innerHTML = '<i data-lucide="play" style="width: 18px; height: 18px;"></i>Resume Processing';
-        updateServiceProgressText('⏸️ Processing paused. Click Resume to continue.');
-        showToast('Processing paused', 'info');
-        console.log('Processing paused by user');
-    } else {
-        if (icon) icon.setAttribute('data-lucide', 'pause');
-        pauseBtn.innerHTML = '<i data-lucide="pause" style="width: 18px; height: 18px;"></i>Pause Processing';
-        updateServiceProgressText('▶️ Processing resumed...');
-        showToast('Processing resumed', 'info');
-        console.log('Processing resumed by user');
+    //if (isPaused) {
+    //    if (icon) icon.setAttribute('data-lucide', 'play');
+    //    pauseBtn.innerHTML = '<i data-lucide="play" style="width: 18px; height: 18px;"></i>Resume Processing';
+    //    updateServiceProgressText('⏸️ Processing paused. Click Resume to continue.');
+    //    showToast('Processing paused', 'info');
+    //    console.log('Processing paused by user');
+    //} else {
+    //    if (icon) icon.setAttribute('data-lucide', 'pause');
+    //    pauseBtn.innerHTML = '<i data-lucide="pause" style="width: 18px; height: 18px;"></i>Pause Processing';
+    //    updateServiceProgressText('▶️ Processing resumed...');
+    //    showToast('Processing resumed', 'info');
+    //    console.log('Processing resumed by user');
 
-        // Resume processing if there are pending rows
-        if (currentRow <= totalRows && !isProcessing) {
-            setTimeout(() => startProgressiveServiceMapping(), 500);
-        }
-    }
+    //    // Resume processing if there are pending rows
+    //    if (currentRow <= totalRows && !isProcessing) {
+    //        setTimeout(() => startProgressiveServiceMapping(), 500);
+    //    }
+    //}
 
     // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
@@ -1205,10 +1209,11 @@ async function approveServiceMapping(rowNum) {
         }
 
         const mappingRequest = {
-            ProviderServiceCode: selected.providerCode,
+            HealthProviderServiceId: selected.providerCode,
+            HealthProviderServiceRelation: selected.providerRelation,
             NphiesServiceCode: selected.nphiesCode,
             IsAiSuggested: selected.confidence === 'manual' ? false : true,
-            ConfidenceScore: selected.confidence,
+            ConfidenceScore: selected.confidenceINT,
             MappingSessionId: mappingSessionId
         };
 
@@ -1295,16 +1300,18 @@ function hideButtonLoader(button) {
 // Get selected final mapping for a row
 function getFinalServiceMapping(rowNum) {
     const providerCodeEl = document.querySelector(`#providerSearch${rowNum} .selected-value`);
+    const providerRelationEl = document.querySelector(`#providerRelation${rowNum} .selected-value`);
     const nphiesHiddenEl = document.querySelector(`#nphiesSearch${rowNum} .selected-value`);
     const aiSuggestionCodeEl = document.querySelector(`#suggestion${rowNum} .fw-bold.text-dark`);
     const confidenceEl = document.querySelector(`#suggestion${rowNum} .confidence-badge`);
 
-    if (!providerCodeEl || !nphiesHiddenEl) return null;
+    if (!providerCodeEl || !nphiesHiddenEl || !providerRelationEl) return null;
 
     const providerCode = providerCodeEl.textContent?.trim() || providerCodeEl.value?.trim() || '';
+    const providerRelation = providerRelationEl.textContent?.trim() || providerRelationEl.value?.trim() || '';
     const nphiesCode = nphiesHiddenEl.value?.trim() || '';
 
-    if (!providerCode || !nphiesCode) return null;
+    if (!providerCode || !nphiesCode || !providerRelation) return null;
 
     // If selected NPHIES equals suggested code -> use AI confidence; else manual
     let confidence = 'manual';
@@ -1320,7 +1327,8 @@ function getFinalServiceMapping(rowNum) {
         providerCode,
         nphiesCode,
         confidence,
-        confidenceINT
+        confidenceINT,
+        providerRelation
     };
 }
 
@@ -1483,7 +1491,7 @@ async function approveAllService() {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(bulkRequest)
+                    body: JSON.stringify(highConfidenceMappings)
                 });
 
                 const result = await response.json();
@@ -1534,15 +1542,18 @@ function getHighConfidenceServiceMappings() {
         const selected = getFinalServiceMapping(i);
 
         if (selected && selected.confidenceINT >= threshold) {
-            mappings.push({
-                providerServiceCodeId: service.id,
-                nphiesServiceCode: selected.nphiesCode,
-                providerServiceCode: selected.providerCode,
-                isAiSuggested: true,
-                confidenceScore: selected.confidence,
-                rowMapped: i,
-                mappingSessionId: mappingSessionId
-            });
+
+            const mappingRequest = {
+                HealthProviderServiceId: selected.providerCode,
+                HealthProviderServiceRelation: selected.providerRelation,
+                NphiesServiceCode: selected.nphiesCode,
+                IsAiSuggested: selected.confidence === 'manual' ? false : true,
+                ConfidenceScore: selected.confidenceINT,
+                MappingSessionId: mappingSessionId,
+                rowMapped: i
+            };
+
+            mappings.push(mappingRequest);
         }
         i++;
     });
@@ -1595,8 +1606,9 @@ async function exportServiceResults() {
         showToast('Exporting service mappings...', 'info');
 
         const requestBody = {
-            sessionId: mappingSessionId,
-            includeUnapproved: true
+            SessionId: mappingSessionId,
+            IncludeUnapproved: true,
+            Format: 'Excel'
         };
 
         console.log('Export request:', requestBody);

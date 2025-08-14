@@ -205,6 +205,49 @@ namespace NphiesBridge.Web.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> SaveBulkMappings([FromBody] List<SaveServiceMappingRequest> requests)
+        {
+            try
+            {
+                var healthProviderId = LoggedInUserHelper.GetCurrentHealthProviderId(HttpContext);
+                var userId = _authService.GetCurrentUser().Id;
+
+                // Set HealthProviderId and MappedBy for each mapping
+                foreach (var req in requests)
+                {
+                    req.HealthProviderId = healthProviderId;
+                    req.MappedBy = userId;
+                }
+
+                // Call SaveMapping for each request, collect results
+                var results = new List<object>();
+                foreach (var req in requests)
+                {
+                    var result = await _serviceApi.SaveMappingAsync(req);
+                    results.Add(new
+                    {
+                        input = req,
+                        success = result?.Success == true,
+                        message = result?.Message,
+                        data = result?.Data
+                    });
+                }
+
+                // Return all results
+                return Json(new
+                {
+                    success = true,
+                    results = results
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving bulk service mappings in web controller");
+                return Json(new { success = false, message = "An error occurred while saving bulk mappings" });
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> BulkMatch([FromBody] BulkServiceMatchingRequest request)
         {
             try

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NphiesBridge.Core.Interfaces;
 using NphiesBridge.Core.Entities.ServiceMapping;
+using NphiesBridge.Core.Interfaces;
 using NphiesBridge.Infrastructure.Data;
 using NphiesBridge.Shared.DTOs;
 using System;
@@ -296,8 +297,8 @@ namespace NphiesBridge.API.Controllers.Provider
         }
 
         // Export stays as a file download (not JSON-enveloped)
-        [HttpGet("export")]
-        public IActionResult ExportMappings([FromQuery] ExportServiceMappingsRequest request)
+        [HttpPost("export")]
+        public IActionResult ExportMappings([FromBody] ExportServiceMappingsRequest request)
         {
             var session = _db.ServiceMappingSessions
                 .Include(x => x.HealthProviderServiceCodes)
@@ -306,6 +307,14 @@ namespace NphiesBridge.API.Controllers.Provider
             if (session == null)
                 return BadRequest("Session not found");
 
+            
+
+            var fileBytes = GenerateExcelFile(session, request);
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ServiceMappings.xlsx");
+        }
+
+        private byte[] GenerateExcelFile(ServiceMappingSession session, ExportServiceMappingsRequest request)
+        {
             var items = session.HealthProviderServiceCodes
                 .Where(x => request.IncludeUnmapped || x.IsMapped)
                 .Select(x => new
@@ -317,15 +326,36 @@ namespace NphiesBridge.API.Controllers.Provider
                     x.IsMapped
                 })
                 .ToList();
+            using (var workbook = new ClosedXML.Excel.XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Service Mappings");
 
-            var fileBytes = GenerateExcelFile(items);
-            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ServiceMappings.xlsx");
-        }
+                // Set header row (template order and naming)
+                worksheet.Cell(1, 1).Value = "ItemId";
+                worksheet.Cell(1, 2).Value = "ItemRelation";
+                worksheet.Cell(1, 3).Value = "Name";
+                worksheet.Cell(1, 4).Value = "NPHIESCode";
+                worksheet.Cell(1, 5).Value = "NPHIESDescription";
 
-        private byte[] GenerateExcelFile(object items)
-        {
-            // Replace with actual Excel generation logic (e.g., ClosedXML/EPPlus).
-            return Array.Empty<byte>();
+                int row = 2;
+                foreach (var item in items)
+                {
+                    worksheet.Cell(row, 1).Value = item.HealthProviderServiceId; // ItemId
+                    worksheet.Cell(row, 2).Value = item.HealthProviderServiceRelation; // ItemRelation
+                    worksheet.Cell(row, 3).Value = item.HealthProviderServiceName; // Name
+                    worksheet.Cell(row, 4).Value = item.NphiesServiceCode ?? ""; // NPHIESCode
+                    worksheet.Cell(row, 5).Value = item.NphiesServiceCode ?? ""; // NPHIESDescription (if available, else blank)
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return stream.ToArray();
+                }
+            }
         }
     }
 }

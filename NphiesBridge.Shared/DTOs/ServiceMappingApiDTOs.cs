@@ -72,6 +72,7 @@ namespace NphiesBridge.Shared.DTOs
 
         public bool IsAiSuggested { get; set; }
         public int ConfidenceScore { get; set; }
+        public Guid MappingSessionId { get; set; }
     }
 
     // Bulk Matching Request/Response

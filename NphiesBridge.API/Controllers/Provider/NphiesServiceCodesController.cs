@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NphiesBridge.Infrastructure.Data;
 using NphiesBridge.Shared.DTOs;
 using System.Linq;
@@ -61,6 +62,38 @@ namespace NphiesBridge.API.Controllers.Provider
 
             // Return the list of DTOs within a success response.
             return ApiResponse<List<NphiesServiceCodeDto>>.SuccessResult(dtoList);
+        }
+
+        // GET /api/nphiesservicecodes
+        // Returns a flat array (not enveloped) to match existing JS:
+        // nphiesServiceCodes = await response.json();
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] int take = 10000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Guardrail to avoid returning excessive data by accident
+                if (take <= 0 || take > 50000) take = 10000;
+
+                var list = await _db.NphiesServiceCodes
+                    .AsNoTracking()
+                    .Where(x => !x.IsDeleted)
+                    .OrderBy(x => x.NphiesServiceCodeValue)
+                    .Take(take)
+                    .Select(x => new NphiesServiceCodeDto
+                    {
+                        Code = x.NphiesServiceCodeValue,
+                        Description = x.NphiesServiceDescription ?? string.Empty
+                        // If your DTO has more fields (e.g., Category, Chapter), map them here.
+                    })
+                    .ToListAsync(cancellationToken);
+
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new object[0]);
+            }
         }
     }
 }
