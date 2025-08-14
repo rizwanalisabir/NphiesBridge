@@ -39,18 +39,28 @@ namespace NphiesBridge.API.Controllers.Provider
         }
 
         [HttpGet("{code}")]
-        public ActionResult<ApiResponse<NphiesServiceCodeDto>> GetByCode(string code)
+        public ActionResult<ApiResponse<List<NphiesServiceCodeDto>>> GetByCode(string code)
         {
-            var entity = _db.NphiesServiceCodes.FirstOrDefault(x => x.NphiesServiceCodeValue == code && !x.IsDeleted);
-            if (entity == null)
-                return ApiResponse<NphiesServiceCodeDto>.ErrorResult("Not found");
+            // Use Where to filter the records based on the code, and then
+            // use Select to project the results into NphiesServiceCodeDto objects.
+            // ToList() executes the query and converts the result to a list.
+            var dtoList = _db.NphiesServiceCodes
+                .Where(x => x.NphiesServiceDescription.ToLower().Contains(code.ToLower()) && !x.IsDeleted)
+                .Select(x => new NphiesServiceCodeDto
+                {
+                    Code = x.NphiesServiceCodeValue,
+                    Description = x.NphiesServiceDescription ?? ""
+                })
+                .ToList();
 
-            var dto = new NphiesServiceCodeDto
+            // If no matching records are found, return an error.
+            if (dtoList == null || !dtoList.Any())
             {
-                Code = entity.NphiesServiceCodeValue,
-                Description = entity.NphiesServiceDescription ?? ""
-            };
-            return ApiResponse<NphiesServiceCodeDto>.SuccessResult(dto);
+                return ApiResponse<List<NphiesServiceCodeDto>>.ErrorResult("No matching service codes found.");
+            }
+
+            // Return the list of DTOs within a success response.
+            return ApiResponse<List<NphiesServiceCodeDto>>.SuccessResult(dtoList);
         }
     }
 }

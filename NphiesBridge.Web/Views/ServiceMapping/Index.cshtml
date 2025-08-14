@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Service Codes Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+    <link rel="stylesheet" href="~/css/icd-mapping.css" asp-append-version="true" />
+
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="mb-3">Service Codes Management Setup</h2>
+            <hr />
+            <p class="lead text-muted">Map your hospital's service codes to NPHIES</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Single option: Service Code Mapping -->
+        <div class="col-lg-6 col-md-8 mb-4">
+            <div class="selection-card option-mapping" onclick="goToServiceMappingSetup()">
+                <div class="card-icon">
+                    <i class="zmdi zmdi-settings fs-30 fw-bolder"></i>
+                </div>
+                <h3 class="card-title">Service Code Mapping</h3>
+                <p class="card-description">
+                    Upload your service codes and map them to NPHIES.<br />
+                    <strong>Simple setup with AI-assisted suggestions.</strong>
+                </p>
+                <div class="card-benefits">
+                    <ul>
+                        <li><i data-lucide="brain"></i> AI-powered suggestions</li>
+                        <li><i data-lucide="upload"></i> Excel template import</li>
+                        <li><i data-lucide="target"></i> Precise mapping control</li>
+                    </ul>
+                </div>
+                <div class="card-action">
+                    <span class="btn-text">Set up service code mapping</span>
+                    <i data-lucide="arrow-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-12 text-center">
+            <p class="text-muted">
+                <i data-lucide="help-circle"></i>
+                Need help with your data format?
+                <a href="@Url.Action("DownloadTemplate", "ServiceMapping")" class="text-primary">Download the Excel template</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function goToServiceMappingSetup() {
+        window.location.href = '@Url.Action("MappingSetup", "ServiceMapping")';
+    }
+
+    // Initialize Lucide icons
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>

@@ -105,7 +105,7 @@ async function loadServiceSessionData() {
         const result = await response.json();
 
         if (result.success && result.data) {
-            providerServiceCodes = result.data.providerServiceCodes;
+            providerServiceCodes = result.data.healthProviderServiceCodes;
             totalRows = result.data.totalRows || providerServiceCodes.length;
 
             console.log(`Loaded session data: ${totalRows} provider service codes`);
@@ -186,8 +186,8 @@ function renderServiceMappingRows() {
                     <div class="row-info">
                         <div class="row-number">${rowNumber}</div>
                         <div>
-                            <div class="fw-bold text-dark">${serviceCode.providerServiceCode} - ${serviceCode.serviceName || serviceCode.providerServiceName || ''}</div>
-                            <div class="text-muted small mt-1">Provider Service Code: ${serviceCode.providerServiceCode}</div>
+                            <div class="fw-bold text-whitw">${serviceCode.healthProviderServiceId} - ${serviceCode.healthProviderServiceName || serviceCode.healthProviderServiceName || ''}</div>
+                            <div class="text-white small mt-1">Provider Service Code: ${serviceCode.healthProviderServiceRelation}</div>
                         </div>
                     </div>
                     <div class="row-status pending" id="status-${rowNumber}">
@@ -205,11 +205,11 @@ function renderServiceMappingRows() {
                             </div>
                             <div class="data-item">
                                 <div class="data-label">Provider Service Code</div>
-                                <div class="data-value">${serviceCode.providerServiceCode}</div>
+                                <div class="data-value">${serviceCode.healthProviderServiceId}</div>
                             </div>
                             <div class="data-item">
                                 <div class="data-label">Service Name</div>
-                                <div class="data-value">${serviceCode.serviceName || serviceCode.providerServiceName || ''}</div>
+                                <div class="data-value">${serviceCode.serviceName || serviceCode.healthProviderServiceName || ''}</div>
                             </div>
                             <div class="data-item">
                                 <div class="data-label">Description</div>
@@ -852,7 +852,7 @@ class ServiceHighPerformanceSearch {
     async searchApi(query, searchType) {
         if (searchType === 'nphies') {
             // Server-side search for NPHIES service codes
-            const response = await fetch(`${apiUrls.baseUrl}/api/nphiesservicecodes/search-code?q=${encodeURIComponent(query)}&limit=${this.maxResults}`, {
+            const response = await fetch(`${apiUrls.baseUrl}/api/nphiesservicecodes/${encodeURIComponent(query)}`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -897,14 +897,14 @@ class ServiceHighPerformanceSearch {
             return;
         }
 
-        const resultHtml = results.map((result, index) => `
+        const resultHtml = results.data.map((result, index) => `
             <div class="search-result-item" 
-                 data-value="${result.id || result.code}" 
+                 data-value="${result.code}" 
                  data-row="${rowNum}" 
                  data-type="${searchType}"
                  data-index="${index}">
-                <div class="result-code">${result.code || result.id}</div>
-                <div class="result-description">${result.description || result.text}</div>
+                <div class="result-code">${result.code}</div>
+                <div class="result-description">${result.description}</div>
             </div>
         `).join('');
 

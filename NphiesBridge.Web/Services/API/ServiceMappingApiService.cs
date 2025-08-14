@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace NphiesBridge.Web.Services.API
 {
+    // This client expects the Service API to return ApiResponse<T> envelopes (same as ICD).
     public class ServiceMappingApiService
     {
         private readonly HttpClient _httpClient;
@@ -38,7 +39,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<CreateServiceSessionResponseDto>>(responseContent, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to create mapping session. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to create service mapping session. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<CreateServiceSessionResponseDto>.ErrorResult($"Failed to create session: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -61,7 +62,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<ServiceMappingPageDto>>(content, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to get mapping session. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to get service mapping session. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<ServiceMappingPageDto>.ErrorResult($"Failed to get session: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -87,7 +88,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<SuccessResponse>>(responseContent, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to save mapping. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to save service mapping. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<SuccessResponse>.ErrorResult($"Failed to save mapping: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -113,7 +114,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<ServiceAiSuggestionResponseDto>>(responseContent, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to get AI suggestion. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to get service AI suggestion. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<ServiceAiSuggestionResponseDto>.ErrorResult($"Failed to get AI suggestion: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -139,7 +140,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<BulkServiceMatchingResponse>>(responseContent, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to bulk match. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to bulk match services. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<BulkServiceMatchingResponse>.ErrorResult($"Failed to bulk match: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -162,7 +163,7 @@ namespace NphiesBridge.Web.Services.API
                     return JsonSerializer.Deserialize<ApiResponse<ServiceMappingStatisticsDto>>(responseContent, _jsonOptions);
                 }
 
-                _logger.LogWarning("Failed to get statistics. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to get service mapping statistics. Status: {StatusCode}", response.StatusCode);
                 return ApiResponse<ServiceMappingStatisticsDto>.ErrorResult($"Failed to get statistics: {response.StatusCode}");
             }
             catch (Exception ex)
@@ -172,7 +173,7 @@ namespace NphiesBridge.Web.Services.API
             }
         }
 
-        // Export mappings
+        // Export mappings (bytes)
         public async Task<byte[]?> ExportMappingsAsync(ExportServiceMappingsRequest request)
         {
             try
@@ -185,7 +186,7 @@ namespace NphiesBridge.Web.Services.API
                     return await response.Content.ReadAsByteArrayAsync();
                 }
 
-                _logger.LogWarning("Failed to export mappings. Status: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("Failed to export service mappings. Status: {StatusCode}", response.StatusCode);
                 return null;
             }
             catch (Exception ex)
@@ -193,6 +194,22 @@ namespace NphiesBridge.Web.Services.API
                 _logger.LogError(ex, "Error exporting service mappings");
                 return null;
             }
+        }
+    }
+
+    // Separate extension type name to avoid clashing with the ICD one.
+    public static class ServiceMappingServiceCollectionExtensions
+    {
+        public static IServiceCollection AddServiceMappingApiService(this IServiceCollection services, string apiBaseUrl)
+        {
+            services.AddHttpClient<ServiceMappingApiService>(client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(5);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
+            return services;
         }
     }
 }
